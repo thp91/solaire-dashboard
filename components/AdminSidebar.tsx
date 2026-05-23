@@ -8,6 +8,7 @@ const NAV = [
   { href: '/admin',               icon: '📊', label: 'Vue d\'ensemble' },
   { href: '/admin/organizations', icon: '🏢', label: 'Clients'         },
   { href: '/admin/devices',       icon: '🖥️', label: 'Modules'         },
+  { href: '/admin/firmware',      icon: '⚡', label: 'Firmware'        },
   { href: '/admin/users',         icon: '👥', label: 'Utilisateurs'    },
 ];
 
