@@ -10,13 +10,14 @@ export const supabase = createBrowserClient(
 export type Temperature = {
   id: number;
   recorded_at: string;
-  capteur_solaire: number;
-  ballon_haut: number;
-  ballon_bas: number;
-  retour_solaire: number;
-  ambiance: number;
-  sonde_1: number | null;
-  sonde_2: number | null;
+  capteur_solaire: number | null;
+  ballon_haut:     number | null;
+  ballon_bas:      number | null;
+  retour_solaire:  number | null;
+  ambiance:        number | null;
+  sonde_1:         number | null;
+  sonde_2:         number | null;
+  sonde_3:         number | null;
 };
 
 export type Etat = {

@@ -171,37 +171,62 @@ export default function DashboardClient({ deviceId, isAdmin, multiDevice }: Prop
             </div>
           )}
 
-          {/* Températures instantanées */}
+          {/* Températures instantanées — VBus régulation */}
           {lastTemp && (
             <div className="space-y-3">
-              <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
-                {[
-                  { label: 'Capteur solaire', value: lastTemp.capteur_solaire, color: 'text-orange-500' },
-                  { label: 'Ballon haut',     value: lastTemp.ballon_haut,     color: 'text-blue-600'   },
-                  { label: 'Ballon bas',      value: lastTemp.ballon_bas,      color: 'text-cyan-600'   },
-                  { label: 'Retour solaire',  value: lastTemp.retour_solaire,  color: 'text-purple-600' },
-                  { label: 'Ambiance',        value: lastTemp.ambiance,        color: 'text-gray-500'   },
-                ].map((t) => (
-                  <div key={t.label} className="bg-white rounded-2xl shadow p-4 text-center">
-                    <p className="text-xs text-gray-400 mb-1">{t.label}</p>
-                    <p className={`text-2xl font-bold ${t.color}`}>{Number(t.value).toFixed(1)}°C</p>
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+                {lastTemp.capteur_solaire != null && (
+                  <div className="bg-white rounded-2xl shadow p-4 text-center">
+                    <p className="text-xs text-gray-400 mb-1">Capteur solaire</p>
+                    <p className="text-2xl font-bold text-orange-500">{Number(lastTemp.capteur_solaire).toFixed(1)}°C</p>
                   </div>
-                ))}
+                )}
+                {lastTemp.ballon_haut != null && (
+                  <div className="bg-white rounded-2xl shadow p-4 text-center">
+                    <p className="text-xs text-gray-400 mb-1">Ballon haut</p>
+                    <p className="text-2xl font-bold text-blue-600">{Number(lastTemp.ballon_haut).toFixed(1)}°C</p>
+                  </div>
+                )}
+                {lastTemp.ballon_bas != null && (
+                  <div className="bg-white rounded-2xl shadow p-4 text-center">
+                    <p className="text-xs text-gray-400 mb-1">Ballon bas</p>
+                    <p className="text-2xl font-bold text-cyan-600">{Number(lastTemp.ballon_bas).toFixed(1)}°C</p>
+                  </div>
+                )}
+                {lastTemp.retour_solaire != null && (
+                  <div className="bg-white rounded-2xl shadow p-4 text-center">
+                    <p className="text-xs text-gray-400 mb-1">Retour solaire</p>
+                    <p className="text-2xl font-bold text-purple-600">{Number(lastTemp.retour_solaire).toFixed(1)}°C</p>
+                  </div>
+                )}
+                {lastTemp.ambiance != null && (
+                  <div className="bg-white rounded-2xl shadow p-4 text-center">
+                    <p className="text-xs text-gray-400 mb-1">Ambiance</p>
+                    <p className="text-2xl font-bold text-gray-500">{Number(lastTemp.ambiance).toFixed(1)}°C</p>
+                  </div>
+                )}
               </div>
 
-              <div className="grid grid-cols-2 gap-3">
-                <div className="bg-white rounded-2xl shadow p-4 text-center border border-green-100">
-                  <p className="text-xs text-gray-400 mb-1">🌡 Sonde 1</p>
-                  <p className="text-2xl font-bold text-green-600">
-                    {lastTemp.sonde_1 != null ? Number(lastTemp.sonde_1).toFixed(2) : '0.00'}°C
-                  </p>
-                </div>
-                <div className="bg-white rounded-2xl shadow p-4 text-center border border-teal-100">
-                  <p className="text-xs text-gray-400 mb-1">🌡 Sonde 2</p>
-                  <p className="text-2xl font-bold text-teal-600">
-                    {lastTemp.sonde_2 != null ? Number(lastTemp.sonde_2).toFixed(2) : '0.00'}°C
-                  </p>
-                </div>
+              {/* Sondes additionnelles DS18B20 */}
+              <div className="grid grid-cols-3 gap-3">
+                {lastTemp.sonde_1 != null && (
+                  <div className="bg-white rounded-2xl shadow p-4 text-center border border-green-100">
+                    <p className="text-xs text-gray-400 mb-1">🌡 Sonde 1</p>
+                    <p className="text-2xl font-bold text-green-600">{Number(lastTemp.sonde_1).toFixed(1)}°C</p>
+                  </div>
+                )}
+                {lastTemp.sonde_2 != null && (
+                  <div className="bg-white rounded-2xl shadow p-4 text-center border border-green-100">
+                    <p className="text-xs text-gray-400 mb-1">🌡 Sonde 2</p>
+                    <p className="text-2xl font-bold text-green-600">{Number(lastTemp.sonde_2).toFixed(1)}°C</p>
+                  </div>
+                )}
+                {lastTemp.sonde_3 != null && (
+                  <div className="bg-white rounded-2xl shadow p-4 text-center border border-green-100">
+                    <p className="text-xs text-gray-400 mb-1">🌡 Sonde 3</p>
+                    <p className="text-2xl font-bold text-green-600">{Number(lastTemp.sonde_3).toFixed(1)}°C</p>
+                  </div>
+                )}
               </div>
             </div>
           )}

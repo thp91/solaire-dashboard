@@ -20,12 +20,6 @@ export default function StatusCards({ etat, debit }: Props) {
         icon="💧"
       />
       <Card
-        label="Débit simulé"
-        value={debit ? `${Number(debit.lph_simule).toFixed(0)} L/h` : '—'}
-        color="text-cyan-500"
-        icon="🔵"
-      />
-      <Card
         label="Énergie produite"
         value={etat ? `${Number(etat.energie_produite_wh).toFixed(0)} Wh` : '—'}
         color="text-orange-500"
