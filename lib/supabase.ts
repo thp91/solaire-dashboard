@@ -18,6 +18,9 @@ export type Temperature = {
   sonde_1:         number | null;
   sonde_2:         number | null;
   sonde_3:         number | null;
+  sonde_4:         number | null;
+  sonde_5:         number | null;
+  esp32_temp:      number | null;
 };
 
 export type Etat = {

@@ -2,9 +2,9 @@
 
 import { Etat, Debit } from '@/lib/supabase';
 
-type Props = { etat: Etat | null; debit: Debit | null };
+type Props = { etat: Etat | null; debit: Debit | null; esp32Temp?: number | null };
 
-export default function StatusCards({ etat, debit }: Props) {
+export default function StatusCards({ etat, debit, esp32Temp }: Props) {
   return (
     <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
       <Card
@@ -24,6 +24,12 @@ export default function StatusCards({ etat, debit }: Props) {
         value={etat ? `${Number(etat.energie_produite_wh).toFixed(0)} Wh` : '—'}
         color="text-orange-500"
         icon="☀️"
+      />
+      <Card
+        label="Temp. ESP32"
+        value={esp32Temp != null ? `${Number(esp32Temp).toFixed(1)}°C` : '—'}
+        color={esp32Temp != null && esp32Temp > 80 ? 'text-red-500' : 'text-gray-500'}
+        icon="🖥️"
       />
       <Card
         label="Firmware"

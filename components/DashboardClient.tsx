@@ -208,7 +208,7 @@ export default function DashboardClient({ deviceId, isAdmin, multiDevice }: Prop
               </div>
 
               {/* Sondes additionnelles DS18B20 */}
-              <div className="grid grid-cols-3 gap-3">
+              <div className="grid grid-cols-3 md:grid-cols-5 gap-3">
                 {lastTemp.sonde_1 != null && (
                   <div className="bg-white rounded-2xl shadow p-4 text-center border border-green-100">
                     <p className="text-xs text-gray-400 mb-1">🌡 Sonde 1</p>
@@ -227,11 +227,23 @@ export default function DashboardClient({ deviceId, isAdmin, multiDevice }: Prop
                     <p className="text-2xl font-bold text-green-600">{Number(lastTemp.sonde_3).toFixed(1)}°C</p>
                   </div>
                 )}
+                {lastTemp.sonde_4 != null && (
+                  <div className="bg-white rounded-2xl shadow p-4 text-center border border-green-100">
+                    <p className="text-xs text-gray-400 mb-1">🌡 Sonde 4</p>
+                    <p className="text-2xl font-bold text-green-600">{Number(lastTemp.sonde_4).toFixed(1)}°C</p>
+                  </div>
+                )}
+                {lastTemp.sonde_5 != null && (
+                  <div className="bg-white rounded-2xl shadow p-4 text-center border border-green-100">
+                    <p className="text-xs text-gray-400 mb-1">🌡 Sonde 5</p>
+                    <p className="text-2xl font-bold text-green-600">{Number(lastTemp.sonde_5).toFixed(1)}°C</p>
+                  </div>
+                )}
               </div>
             </div>
           )}
 
-          <StatusCards etat={lastEtat} debit={lastDebit} />
+          <StatusCards etat={lastEtat} debit={lastDebit} esp32Temp={lastTemp?.esp32_temp} />
 
           {temperatures.length > 0
             ? <TemperatureChart data={temperatures} />
