@@ -37,11 +37,11 @@ type EtatStats = {
 };
 
 const SERIES = [
-  { key: 'capteur_solaire', label: 'Capteur solaire', color: '#f97316' },
-  { key: 'ballon_haut',     label: 'Ballon haut',     color: '#3b82f6' },
-  { key: 'ballon_bas',      label: 'Ballon bas',       color: '#06b6d4' },
-  { key: 'retour_solaire',  label: 'Retour solaire',   color: '#a855f7' },
-  { key: 'ambiance',        label: 'Ambiance',         color: '#6b7280' },
+  { key: 'capteur_solaire', label: 'Capteur solaire', color: '#FFD166' },
+  { key: 'ballon_haut',     label: 'Ballon haut',     color: '#00D4FF' },
+  { key: 'ballon_bas',      label: 'Ballon bas',       color: '#42F5A7' },
+  { key: 'retour_solaire',  label: 'Retour solaire',   color: '#a78bfa' },
+  { key: 'ambiance',        label: 'Ambiance',         color: '#7A8A99' },
 ] as const;
 
 type Props = { deviceId: string };
@@ -74,67 +74,71 @@ export default function HistorySection({ deviceId }: Props) {
   }
 
   return (
-    <div className="bg-white rounded-2xl shadow p-6 space-y-6">
-      <h2 className="text-lg font-semibold text-gray-700">Historique journalier</h2>
+    <div className="bg-[#0B1B2B] border border-[#1A2D42] rounded-2xl p-6 space-y-6">
+      <h2 className="text-base font-semibold text-[#F5FAFF]">Historique journalier</h2>
 
-      {/* Sélecteur de date */}
       <div className="flex gap-3 items-center">
         <input
           type="date"
           value={date}
           max={new Date(Date.now() - 86400000).toISOString().split('T')[0]}
           onChange={(e) => setDate(e.target.value)}
-          className="border border-gray-200 rounded-xl px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-300"
+          className="bg-[#050B12] border border-[#1A2D42] rounded-xl px-4 py-2.5 text-sm text-[#F5FAFF] focus:outline-none focus:border-[#00D4FF] focus:ring-1 focus:ring-[#00D4FF] transition [color-scheme:dark]"
         />
         <button
           onClick={load}
           disabled={!date || loading}
-          className="px-4 py-2 bg-blue-500 hover:bg-blue-600 text-white rounded-xl text-sm font-medium transition disabled:opacity-50"
+          className="px-4 py-2.5 bg-[#00D4FF]/10 text-[#00D4FF] border border-[#00D4FF]/30 hover:bg-[#00D4FF]/20 rounded-xl text-sm font-semibold transition disabled:opacity-50"
         >
           {loading ? 'Chargement…' : 'Voir'}
         </button>
       </div>
 
-      {/* Pas de données */}
       {searched && !loading && mesures.length === 0 && (
-        <p className="text-gray-400 text-sm">Aucune donnée archivée pour cette date.</p>
+        <p className="text-[#7A8A99] text-sm">Aucune donnée archivée pour cette date.</p>
       )}
 
-      {/* Stats du jour */}
       {stats && (
         <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-          <StatCard label="Capteur max"     value={`${stats.capteur_max}°C`}           color="text-orange-500" />
-          <StatCard label="Capteur min"     value={`${stats.capteur_min}°C`}           color="text-blue-400"   />
-          <StatCard label="Ballon max"      value={`${stats.ballon_max}°C`}            color="text-blue-600"   />
-          <StatCard label="Mesures"         value={`${stats.nb_mesures}`}              color="text-gray-500"   />
-          {debitStats && (
-            <StatCard label="Débit max"     value={`${debitStats.lph_max} L/h`}        color="text-cyan-600"   />
+          <StatCard label="Capteur max"     value={`${stats.capteur_max}°C`}           color="#FFD166" />
+          <StatCard label="Capteur min"     value={`${stats.capteur_min}°C`}           color="#00D4FF" />
+          <StatCard label="Ballon max"      value={`${stats.ballon_max}°C`}            color="#42F5A7" />
+          <StatCard label="Mesures"         value={`${stats.nb_mesures}`}              color="#7A8A99" />
+          {debitStats && <StatCard label="Débit max"      value={`${debitStats.lph_max} L/h`}  color="#00D4FF" />}
+          {debitStats && <StatCard label="Débit moyen"    value={`${debitStats.lph_moy} L/h`}  color="#00D4FF" />}
+          {etatStats && <StatCard label="Énergie totale" value={`${etatStats.energie_totale_wh} Wh`} color="#FFD166" />}
+          {etatStats && (etatStats as any).kwh != null && (
+            <StatCard label="Production"    value={`${(etatStats as any).kwh} kWh`}   color="#42F5A7" />
           )}
-          {debitStats && (
-            <StatCard label="Débit moyen"   value={`${debitStats.lph_moy} L/h`}        color="text-cyan-400"   />
-          )}
-          {etatStats && (
-            <StatCard label="Énergie totale" value={`${etatStats.energie_totale_wh} Wh`} color="text-orange-400" />
-          )}
-          {etatStats && (
-            <StatCard label="Pompe ON"      value={`${Math.round(etatStats.pompe_on_count * 5 / 60)} min`} color="text-green-500" />
-          )}
+          {etatStats && <StatCard label="Pompe ON"       value={`${Math.round(etatStats.pompe_on_count * 5 / 60)} min`} color="#42F5A7" />}
         </div>
       )}
 
-      {/* Graphique */}
       {mesures.length > 0 && (
         <ResponsiveContainer width="100%" height={300}>
           <LineChart data={mesures}>
-            <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
+            <CartesianGrid strokeDasharray="3 3" stroke="#1A2D42" vertical={false} />
             <XAxis
               dataKey="t"
-              tick={{ fontSize: 10 }}
+              tick={{ fontSize: 10, fill: '#7A8A99' }}
+              axisLine={{ stroke: '#1A2D42' }}
+              tickLine={false}
               interval={Math.floor(mesures.length / 8)}
             />
-            <YAxis unit="°C" tick={{ fontSize: 11 }} domain={['auto', 'auto']} />
-            <Tooltip formatter={(v) => v != null ? `${Number(v).toFixed(1)} °C` : '—'} />
-            <Legend />
+            <YAxis
+              unit="°C"
+              tick={{ fontSize: 10, fill: '#7A8A99' }}
+              axisLine={false}
+              tickLine={false}
+              domain={['auto', 'auto']}
+            />
+            <Tooltip
+              contentStyle={{ background: '#050B12', border: '1px solid #1A2D42', borderRadius: '12px', fontSize: 12 }}
+              labelStyle={{ color: '#7A8A99' }}
+              itemStyle={{ color: '#F5FAFF' }}
+              formatter={(v) => v != null ? `${Number(v).toFixed(1)} °C` : '—'}
+            />
+            <Legend wrapperStyle={{ fontSize: 11, color: '#7A8A99', paddingTop: 16 }} />
             {SERIES.map((s) => (
               <Line
                 key={s.key}
@@ -155,9 +159,9 @@ export default function HistorySection({ deviceId }: Props) {
 
 function StatCard({ label, value, color }: { label: string; value: string; color: string }) {
   return (
-    <div className="bg-gray-50 rounded-xl p-3">
-      <p className="text-xs text-gray-400 mb-1">{label}</p>
-      <p className={`text-lg font-bold ${color}`}>{value}</p>
+    <div className="bg-[#050B12] border border-[#1A2D42] rounded-xl p-3">
+      <p className="text-[10px] text-[#7A8A99] uppercase tracking-widest mb-1.5">{label}</p>
+      <p className="text-lg font-bold" style={{ color }}>{value}</p>
     </div>
   );
 }

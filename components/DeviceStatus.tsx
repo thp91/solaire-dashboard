@@ -18,17 +18,16 @@ function computeStatus(lastSeen: string | null, publishing: boolean): StatusLeve
   return 'offline';
 }
 
-const STATUS_CONFIG: Record<StatusLevel, { label: string; dot: string; badge: string }> = {
-  running:  { label: 'En fonctionnement',  dot: 'bg-green-500 animate-pulse', badge: 'bg-green-100 text-green-700' },
-  stopped:  { label: 'Flux arrêté',        dot: 'bg-red-400',                 badge: 'bg-red-100 text-red-600'     },
-  unstable: { label: 'Connexion instable', dot: 'bg-amber-400 animate-pulse', badge: 'bg-amber-100 text-amber-600' },
-  offline:  { label: 'Boîtier hors ligne', dot: 'bg-gray-400',                badge: 'bg-gray-100 text-gray-500'   },
+const STATUS_CONFIG: Record<StatusLevel, { label: string; dot: string; bg: string; text: string }> = {
+  running:  { label: 'En fonctionnement',  dot: '#42F5A7', bg: 'bg-[#42F5A7]/10 border border-[#42F5A7]/20', text: 'text-[#42F5A7]' },
+  stopped:  { label: 'Flux arrêté',        dot: '#FF4D6D', bg: 'bg-[#FF4D6D]/10 border border-[#FF4D6D]/20', text: 'text-[#FF4D6D]' },
+  unstable: { label: 'Connexion instable', dot: '#FFD166', bg: 'bg-[#FFD166]/10 border border-[#FFD166]/20', text: 'text-[#FFD166]' },
+  offline:  { label: 'Hors ligne',         dot: '#7A8A99', bg: 'bg-[#7A8A99]/10 border border-[#7A8A99]/20', text: 'text-[#7A8A99]' },
 };
 
 export default function DeviceStatus({ lastSeen, publishing }: Props) {
   const [status, setStatus] = useState<StatusLevel>(() => computeStatus(lastSeen, publishing));
 
-  // Recalcule toutes les 5s car le statut dépend de l'heure courante
   useEffect(() => {
     setStatus(computeStatus(lastSeen, publishing));
     const id = setInterval(() => setStatus(computeStatus(lastSeen, publishing)), 5_000);
@@ -38,8 +37,11 @@ export default function DeviceStatus({ lastSeen, publishing }: Props) {
   const cfg = STATUS_CONFIG[status];
 
   return (
-    <span className={`inline-flex items-center gap-2 px-3 py-1 rounded-full text-sm font-medium ${cfg.badge}`}>
-      <span className={`w-2 h-2 rounded-full flex-shrink-0 ${cfg.dot}`} />
+    <span className={`inline-flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-medium ${cfg.bg} ${cfg.text}`}>
+      <span
+        className={`w-1.5 h-1.5 rounded-full flex-shrink-0 ${status === 'running' || status === 'unstable' ? 'animate-pulse' : ''}`}
+        style={{ backgroundColor: cfg.dot }}
+      />
       {cfg.label}
     </span>
   );

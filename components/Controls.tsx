@@ -8,12 +8,11 @@ const API = process.env.NEXT_PUBLIC_BACKEND_URL ?? 'http://76.13.128.127:3000';
 type Props = { deviceId: string };
 
 export default function Controls({ deviceId }: Props) {
-  const [publishing, setPublishing] = useState<boolean | null>(null); // null = chargement
+  const [publishing, setPublishing] = useState<boolean | null>(null);
   const [loading, setLoading]       = useState(false);
   const [otaFile, setOtaFile]       = useState<File | null>(null);
   const [otaStatus, setOtaStatus]   = useState('');
 
-  // Lecture initiale depuis la BDD
   useEffect(() => {
     supabase
       .from('devices')
@@ -25,7 +24,6 @@ export default function Controls({ deviceId }: Props) {
       });
   }, [deviceId]);
 
-  // Abonnement temps réel : un autre admin peut changer l'état
   useEffect(() => {
     const channel = supabase
       .channel(`device-publishing-${deviceId}`)
@@ -49,14 +47,12 @@ export default function Controls({ deviceId }: Props) {
     setLoading(true);
     const action = publishing ? 'pompe_off' : 'pompe_on';
 
-    // 1. Commande MQTT via le backend
     await fetch(`${API}/devices/${deviceId}/commande`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ action }),
     });
 
-    // 2. Persiste l'état en BDD
     const next = !publishing;
     await supabase.from('devices').update({ publishing: next }).eq('id', deviceId);
     setPublishing(next);
@@ -78,16 +74,16 @@ export default function Controls({ deviceId }: Props) {
   }
 
   return (
-    <div className="bg-white rounded-2xl shadow p-6 space-y-6">
+    <div className="bg-[#0B1B2B] border border-[#1A2D42] rounded-2xl p-6 space-y-6">
       <div>
-        <h2 className="text-lg font-semibold text-gray-700 mb-3">Flux de données</h2>
+        <h2 className="text-base font-semibold text-[#F5FAFF] mb-3">Flux de données</h2>
         <button
           onClick={toggleFlux}
           disabled={loading || publishing === null}
-          className={`px-5 py-2 rounded-xl font-medium text-white transition disabled:opacity-50 ${
+          className={`px-5 py-2.5 rounded-xl font-semibold text-sm transition disabled:opacity-50 ${
             publishing !== false
-              ? 'bg-red-500 hover:bg-red-600'
-              : 'bg-green-500 hover:bg-green-600'
+              ? 'bg-[#FF4D6D]/10 text-[#FF4D6D] border border-[#FF4D6D]/30 hover:bg-[#FF4D6D]/20'
+              : 'bg-[#42F5A7]/10 text-[#42F5A7] border border-[#42F5A7]/30 hover:bg-[#42F5A7]/20'
           }`}
         >
           {publishing === null
@@ -100,10 +96,10 @@ export default function Controls({ deviceId }: Props) {
       </div>
 
       <div>
-        <h2 className="text-lg font-semibold text-gray-700 mb-3">Mise à jour firmware (OTA)</h2>
+        <h2 className="text-base font-semibold text-[#F5FAFF] mb-3">Mise à jour firmware (OTA)</h2>
         <div className="flex gap-3 items-center flex-wrap">
-          <label className="cursor-pointer px-4 py-2 bg-gray-100 hover:bg-gray-200 rounded-xl text-sm font-medium transition">
-            📁 {otaFile ? otaFile.name : 'Choisir un .bin'}
+          <label className="cursor-pointer px-4 py-2.5 bg-[#050B12] border border-[#1A2D42] hover:border-[#7A8A99] rounded-xl text-sm font-medium text-[#7A8A99] hover:text-[#F5FAFF] transition">
+            ↑ {otaFile ? otaFile.name : 'Choisir un .bin'}
             <input
               type="file"
               accept=".bin"
@@ -114,12 +110,12 @@ export default function Controls({ deviceId }: Props) {
           <button
             onClick={sendOta}
             disabled={!otaFile}
-            className="px-4 py-2 bg-orange-500 hover:bg-orange-600 text-white rounded-xl font-medium transition disabled:opacity-50"
+            className="px-4 py-2.5 bg-[#00D4FF]/10 text-[#00D4FF] border border-[#00D4FF]/30 hover:bg-[#00D4FF]/20 rounded-xl font-semibold text-sm transition disabled:opacity-50"
           >
-            🚀 Flash OTA
+            Flash OTA
           </button>
         </div>
-        {otaStatus && <p className="mt-2 text-sm text-gray-500">{otaStatus}</p>}
+        {otaStatus && <p className="mt-2 text-sm text-[#7A8A99]">{otaStatus}</p>}
       </div>
     </div>
   );

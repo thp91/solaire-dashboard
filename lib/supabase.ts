@@ -35,8 +35,28 @@ export type Etat = {
 export type Debit = {
   id: number;
   recorded_at: string;
-  lph: number;
-  lph_simule: number;
+  lph:   number;
+  lph_2: number;
+};
+
+export type EnergyDaily = {
+  date:  string;
+  stats: {
+    kwh:               number;
+    savings_eur:       number;
+    energie_totale_wh: number;
+    pompe_on_count:    number;
+    nb_mesures:        number;
+  };
+};
+
+export type Alerte = {
+  id:         number;
+  device_id:  string;
+  type:       string;
+  message:    string;
+  resolved:   boolean;
+  created_at: string;
 };
 
 // ─── Types auth / admin ───────────────────────────────────────────────────────

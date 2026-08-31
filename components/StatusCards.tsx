@@ -5,48 +5,69 @@ import { Etat, Debit } from '@/lib/supabase';
 type Props = { etat: Etat | null; debit: Debit | null; esp32Temp?: number | null };
 
 export default function StatusCards({ etat, debit, esp32Temp }: Props) {
+  const pumpOn = etat?.pompe_solaire;
+  const esp32Hot = esp32Temp != null && esp32Temp > 80;
+
   return (
-    <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
+    <div className="grid grid-cols-2 md:grid-cols-6 gap-3">
       <Card
         label="Pompe solaire"
-        value={etat?.pompe_solaire ? 'EN MARCHE' : 'ARRÊTÉE'}
-        color={etat?.pompe_solaire ? 'text-green-600' : 'text-gray-400'}
-        icon={etat?.pompe_solaire ? '🟢' : '⚫'}
+        value={pumpOn ? 'EN MARCHE' : 'ARRÊTÉE'}
+        valueColor={pumpOn ? '#42F5A7' : '#7A8A99'}
+        dot={pumpOn ? '#42F5A7' : '#7A8A99'}
+        pulse={pumpOn}
       />
       <Card
-        label="Débit réel (GPIO)"
+        label="Débit 1"
         value={debit ? `${Number(debit.lph).toFixed(0)} L/h` : '—'}
-        color="text-blue-600"
-        icon="💧"
+        valueColor="#00D4FF"
+        dot="#00D4FF"
+      />
+      <Card
+        label="Débit 2"
+        value={debit ? `${Number(debit.lph_2).toFixed(0)} L/h` : '—'}
+        valueColor="#00D4FF"
+        dot="#00D4FF"
       />
       <Card
         label="Énergie produite"
         value={etat ? `${Number(etat.energie_produite_wh).toFixed(0)} Wh` : '—'}
-        color="text-orange-500"
-        icon="☀️"
+        valueColor="#FFD166"
+        dot="#FFD166"
       />
       <Card
         label="Temp. ESP32"
         value={esp32Temp != null ? `${Number(esp32Temp).toFixed(1)}°C` : '—'}
-        color={esp32Temp != null && esp32Temp > 80 ? 'text-red-500' : 'text-gray-500'}
-        icon="🖥️"
+        valueColor={esp32Hot ? '#FF4D6D' : '#7A8A99'}
+        dot={esp32Hot ? '#FF4D6D' : '#1A2D42'}
       />
       <Card
         label="Firmware"
         value={etat?.firmware ?? '—'}
-        color="text-gray-500"
-        icon="🔧"
+        valueColor="#7A8A99"
+        dot="#1A2D42"
       />
     </div>
   );
 }
 
-function Card({ label, value, color, icon }: { label: string; value: string; color: string; icon: string }) {
+function Card({
+  label, value, valueColor, dot, pulse,
+}: {
+  label: string; value: string; valueColor: string; dot: string; pulse?: boolean;
+}) {
   return (
-    <div className="bg-white rounded-2xl shadow p-5 flex flex-col gap-1">
-      <span className="text-2xl">{icon}</span>
-      <span className="text-xs text-gray-400 uppercase tracking-wide">{label}</span>
-      <span className={`text-xl font-bold ${color}`}>{value}</span>
+    <div className="bg-[#0B1B2B] border border-[#1A2D42] rounded-2xl p-4 flex flex-col gap-2">
+      <div className="flex items-center gap-2">
+        <span
+          className={`w-2 h-2 rounded-full flex-shrink-0 ${pulse ? 'animate-pulse' : ''}`}
+          style={{ backgroundColor: dot }}
+        />
+        <span className="text-[10px] text-[#7A8A99] uppercase tracking-widest">{label}</span>
+      </div>
+      <span className="text-lg font-bold font-[var(--font-space-grotesk)]" style={{ color: valueColor }}>
+        {value}
+      </span>
     </div>
   );
 }

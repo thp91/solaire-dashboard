@@ -9,6 +9,9 @@ import HistorySection from '@/components/HistorySection';
 import ClientNavbar from '@/components/ClientNavbar';
 import DeviceStatus from '@/components/DeviceStatus';
 import SolarSchemaView, { SchemaLiveData } from '@/components/SolarSchemaView';
+import EnergySection from '@/components/EnergySection';
+import AlertBanner from '@/components/AlertBanner';
+import DeviceSettings from '@/components/DeviceSettings';
 import { SchemaConfig } from '@/lib/schema-types';
 
 const HISTORY_SIZE = 60;
@@ -21,6 +24,7 @@ export default function DashboardClient({ deviceId, isAdmin, multiDevice }: Prop
   const [lastDebit, setLastDebit]       = useState<Debit | null>(null);
   const [lastSeen, setLastSeen]         = useState<string | null>(null);
   const [publishing, setPublishing]     = useState<boolean>(true);
+  const [deviceName, setDeviceName]     = useState<string | null>(null);
   const [schema, setSchema]             = useState<SchemaConfig | null>(null);
 
   useEffect(() => {
@@ -38,14 +42,14 @@ export default function DashboardClient({ deviceId, isAdmin, multiDevice }: Prop
           .order('recorded_at', { ascending: false }).limit(1),
         supabase.from('debits').select('*').eq('device_id', deviceId)
           .order('recorded_at', { ascending: false }).limit(1),
-        supabase.from('devices').select('last_seen, publishing').eq('id', deviceId).single(),
+        supabase.from('devices').select('last_seen, publishing, name').eq('id', deviceId).single(),
         supabase.from('device_schemas').select('config').eq('device_id', deviceId).maybeSingle(),
       ]);
 
       if (temps)      setTemperatures([...temps].reverse());
       if (etats?.[0]) setLastEtat(etats[0]);
       if (debits?.[0]) setLastDebit(debits[0]);
-      if (device) { setLastSeen(device.last_seen); setPublishing(device.publishing ?? true); }
+      if (device) { setLastSeen(device.last_seen); setPublishing(device.publishing ?? true); setDeviceName(device.name ?? null); }
       if (schemaRow?.config) setSchema(schemaRow.config as SchemaConfig);
     }
     load();
@@ -64,11 +68,9 @@ export default function DashboardClient({ deviceId, isAdmin, multiDevice }: Prop
     async function subscribe() {
       if (!mounted) return;
 
-      // Attendre que la session soit chargée — nécessaire pour que RLS passe
       const { data: { session } } = await supabase.auth.getSession();
       if (!mounted) return;
       if (!session) {
-        // Réessayer dans 2s si pas encore de session
         retryTimeout = setTimeout(subscribe, 2000);
         return;
       }
@@ -105,7 +107,6 @@ export default function DashboardClient({ deviceId, isAdmin, multiDevice }: Prop
 
     subscribe();
 
-    // Re-subscribe si la session change (login/logout/refresh)
     const { data: { subscription: authSub } } = supabase.auth.onAuthStateChange(() => {
       cleanup();
       subscribe();
@@ -131,115 +132,79 @@ export default function DashboardClient({ deviceId, isAdmin, multiDevice }: Prop
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 flex flex-col">
+    <div className="min-h-screen bg-[#050B12] flex flex-col">
       {!isAdmin && <ClientNavbar deviceId={deviceId} showBack={multiDevice} />}
 
       <main className="flex-1 p-6">
-        <div className="max-w-5xl mx-auto space-y-6">
+        <div className="max-w-5xl mx-auto space-y-5">
 
           {/* Header */}
-          <div className="flex items-center justify-between flex-wrap gap-3">
+          <div className="flex items-center justify-between flex-wrap gap-3 pb-2">
             <div>
-              {isAdmin && <p className="text-xs text-gray-400 mb-0.5">Module</p>}
-              <h1 className="text-2xl font-bold text-gray-800">
-                {schema?.installation_name || (isAdmin ? deviceId : '☀️ Mon installation')}
+              {isAdmin && <p className="text-[10px] text-[#7A8A99] uppercase tracking-widest mb-1">Module</p>}
+              <h1 className="text-2xl font-bold text-[#F5FAFF] tracking-tight">
+                {deviceName || schema?.installation_name || (isAdmin ? deviceId : 'Mon installation')}
               </h1>
-              {isAdmin && <p className="text-xs text-gray-300 mt-0.5">{deviceId}</p>}
+              {isAdmin && <p className="text-xs text-[#1A2D42] font-mono mt-0.5">{deviceId}</p>}
             </div>
             <div className="flex items-center gap-3">
               <DeviceStatus lastSeen={lastSeen} publishing={publishing} />
               {isAdmin && (
                 <a href={`/admin/devices/${deviceId}/schema`}
-                  className="px-3 py-1.5 text-xs border border-gray-200 rounded-xl text-gray-500 hover:bg-gray-50 hover:border-gray-300 transition">
-                  ⚙ Schéma
+                  className="px-3 py-1.5 text-xs border border-[#1A2D42] rounded-xl text-[#7A8A99] hover:bg-[#0B1B2B] hover:border-[#7A8A99] hover:text-[#F5FAFF] transition">
+                  Schéma
                 </a>
               )}
             </div>
           </div>
 
+          {/* Alertes */}
+          <AlertBanner deviceId={deviceId} isAdmin={isAdmin} />
+
           {/* Schéma interactif */}
-          {schema && (
-            <SolarSchemaView config={schema} live={liveForSchema} />
-          )}
+          {schema && <SolarSchemaView config={schema} live={liveForSchema} />}
           {!schema && isAdmin && (
-            <div className="bg-white rounded-2xl shadow p-6 text-center">
-              <p className="text-gray-400 text-sm mb-3">Aucun schéma configuré pour ce module.</p>
+            <div className="bg-[#0B1B2B] border border-[#1A2D42] rounded-2xl p-6 text-center">
+              <p className="text-[#7A8A99] text-sm mb-3">Aucun schéma configuré pour ce module.</p>
               <a href={`/admin/devices/${deviceId}/schema`}
-                className="inline-block px-5 py-2 bg-blue-500 hover:bg-blue-600 text-white rounded-xl text-sm font-medium transition">
+                className="inline-block px-5 py-2 bg-[#00D4FF]/10 text-[#00D4FF] border border-[#00D4FF]/30 hover:bg-[#00D4FF]/20 rounded-xl text-sm font-semibold transition">
                 Configurer le schéma →
               </a>
             </div>
           )}
 
-          {/* Températures instantanées — VBus régulation */}
+          {/* Températures instantanées VBus */}
           {lastTemp && (
             <div className="space-y-3">
               <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
                 {lastTemp.capteur_solaire != null && (
-                  <div className="bg-white rounded-2xl shadow p-4 text-center">
-                    <p className="text-xs text-gray-400 mb-1">Capteur solaire</p>
-                    <p className="text-2xl font-bold text-orange-500">{Number(lastTemp.capteur_solaire).toFixed(1)}°C</p>
-                  </div>
+                  <TempCard label="Capteur solaire" value={lastTemp.capteur_solaire} color="#FFD166" />
                 )}
                 {lastTemp.ballon_haut != null && (
-                  <div className="bg-white rounded-2xl shadow p-4 text-center">
-                    <p className="text-xs text-gray-400 mb-1">Ballon haut</p>
-                    <p className="text-2xl font-bold text-blue-600">{Number(lastTemp.ballon_haut).toFixed(1)}°C</p>
-                  </div>
+                  <TempCard label="Ballon haut" value={lastTemp.ballon_haut} color="#00D4FF" />
                 )}
                 {lastTemp.ballon_bas != null && (
-                  <div className="bg-white rounded-2xl shadow p-4 text-center">
-                    <p className="text-xs text-gray-400 mb-1">Ballon bas</p>
-                    <p className="text-2xl font-bold text-cyan-600">{Number(lastTemp.ballon_bas).toFixed(1)}°C</p>
-                  </div>
+                  <TempCard label="Ballon bas" value={lastTemp.ballon_bas} color="#42F5A7" />
                 )}
                 {lastTemp.retour_solaire != null && (
-                  <div className="bg-white rounded-2xl shadow p-4 text-center">
-                    <p className="text-xs text-gray-400 mb-1">Retour solaire</p>
-                    <p className="text-2xl font-bold text-purple-600">{Number(lastTemp.retour_solaire).toFixed(1)}°C</p>
-                  </div>
+                  <TempCard label="Retour solaire" value={lastTemp.retour_solaire} color="#a78bfa" />
                 )}
                 {lastTemp.ambiance != null && (
-                  <div className="bg-white rounded-2xl shadow p-4 text-center">
-                    <p className="text-xs text-gray-400 mb-1">Ambiance</p>
-                    <p className="text-2xl font-bold text-gray-500">{Number(lastTemp.ambiance).toFixed(1)}°C</p>
-                  </div>
+                  <TempCard label="Ambiance" value={lastTemp.ambiance} color="#7A8A99" />
                 )}
               </div>
 
               {/* Sondes additionnelles DS18B20 */}
-              <div className="grid grid-cols-3 md:grid-cols-5 gap-3">
-                {lastTemp.sonde_1 != null && (
-                  <div className="bg-white rounded-2xl shadow p-4 text-center border border-green-100">
-                    <p className="text-xs text-gray-400 mb-1">🌡 Sonde 1</p>
-                    <p className="text-2xl font-bold text-green-600">{Number(lastTemp.sonde_1).toFixed(1)}°C</p>
-                  </div>
-                )}
-                {lastTemp.sonde_2 != null && (
-                  <div className="bg-white rounded-2xl shadow p-4 text-center border border-green-100">
-                    <p className="text-xs text-gray-400 mb-1">🌡 Sonde 2</p>
-                    <p className="text-2xl font-bold text-green-600">{Number(lastTemp.sonde_2).toFixed(1)}°C</p>
-                  </div>
-                )}
-                {lastTemp.sonde_3 != null && (
-                  <div className="bg-white rounded-2xl shadow p-4 text-center border border-green-100">
-                    <p className="text-xs text-gray-400 mb-1">🌡 Sonde 3</p>
-                    <p className="text-2xl font-bold text-green-600">{Number(lastTemp.sonde_3).toFixed(1)}°C</p>
-                  </div>
-                )}
-                {lastTemp.sonde_4 != null && (
-                  <div className="bg-white rounded-2xl shadow p-4 text-center border border-green-100">
-                    <p className="text-xs text-gray-400 mb-1">🌡 Sonde 4</p>
-                    <p className="text-2xl font-bold text-green-600">{Number(lastTemp.sonde_4).toFixed(1)}°C</p>
-                  </div>
-                )}
-                {lastTemp.sonde_5 != null && (
-                  <div className="bg-white rounded-2xl shadow p-4 text-center border border-green-100">
-                    <p className="text-xs text-gray-400 mb-1">🌡 Sonde 5</p>
-                    <p className="text-2xl font-bold text-green-600">{Number(lastTemp.sonde_5).toFixed(1)}°C</p>
-                  </div>
-                )}
-              </div>
+              {[1, 2, 3, 4, 5].some((n) => (lastTemp as any)[`sonde_${n}`] != null) && (
+                <div className="grid grid-cols-3 md:grid-cols-5 gap-3">
+                  {[1, 2, 3, 4, 5].map((n) => {
+                    const v = (lastTemp as any)[`sonde_${n}`];
+                    return v != null ? (
+                      <TempCard key={n} label={`Sonde ${n}`} value={v} color="#42F5A7" border />
+                    ) : null;
+                  })}
+                </div>
+              )}
             </div>
           )}
 
@@ -247,13 +212,33 @@ export default function DashboardClient({ deviceId, isAdmin, multiDevice }: Prop
 
           {temperatures.length > 0
             ? <TemperatureChart data={temperatures} />
-            : <div className="bg-white rounded-2xl shadow p-10 text-center text-gray-400">En attente de données…</div>
+            : (
+              <div className="bg-[#0B1B2B] border border-[#1A2D42] rounded-2xl p-10 text-center text-[#7A8A99]">
+                En attente de données…
+              </div>
+            )
           }
 
+          {/* Énergie */}
+          <div className="bg-[#0B1B2B] border border-[#1A2D42] rounded-2xl p-6 space-y-4">
+            <h2 className="text-base font-semibold text-[#F5FAFF]">Énergie solaire</h2>
+            <EnergySection deviceId={deviceId} />
+          </div>
+
+          {isAdmin && <DeviceSettings deviceId={deviceId} />}
           {isAdmin && <Controls deviceId={deviceId} />}
           <HistorySection deviceId={deviceId} />
         </div>
       </main>
+    </div>
+  );
+}
+
+function TempCard({ label, value, color, border }: { label: string; value: number; color: string; border?: boolean }) {
+  return (
+    <div className={`bg-[#0B1B2B] rounded-2xl p-4 text-center ${border ? 'border border-[#42F5A7]/20' : 'border border-[#1A2D42]'}`}>
+      <p className="text-[10px] text-[#7A8A99] uppercase tracking-widest mb-2">{label}</p>
+      <p className="text-2xl font-bold" style={{ color }}>{Number(value).toFixed(1)}°C</p>
     </div>
   );
 }
