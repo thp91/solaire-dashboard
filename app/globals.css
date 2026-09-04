@@ -1,36 +1,214 @@
 @import "tailwindcss";
 
+/* ============================================================
+   EnerVisio — Design system « Apple light »
+   Inspiré d'apple.com / macOS-iOS light mode : blanc,
+   gris système clairs, un seul accent bleu, typo SF,
+   hairlines fines et ombres douces.
+   ============================================================ */
+
 :root {
-  --ev-bg:     #050B12;
-  --ev-card:   #0B1B2B;
-  --ev-border: #1A2D42;
-  --ev-text:   #F5FAFF;
-  --ev-muted:  #7A8A99;
-  --ev-cyan:   #00D4FF;
-  --ev-green:  #42F5A7;
-  --ev-yellow: #FFD166;
-  --ev-red:    #FF4D6D;
+  /* Typographie — SF sur les appareils Apple, Inter en repli */
+  --font-sf: -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text",
+    "Helvetica Neue", var(--font-inter, "Inter"), system-ui, sans-serif;
+  /* Alias legacy : d'anciens composants référencent encore cette variable */
+  --font-space-grotesk: var(--font-sf);
+
+  /* Surfaces (empilement iOS clair : gris de page → blanc) */
+  --bg:           #f5f5f7;   /* fond de page (gris Apple) */
+  --bg-elevated:  #ffffff;   /* carte */
+  --bg-elevated-2:#f2f2f7;   /* champ / élément imbriqué */
+  --bg-hover:     #e8e8ed;   /* survol */
+
+  /* Séparateurs — hairlines sombres translucides */
+  --separator:        rgba(0, 0, 0, 0.10);
+  --separator-strong: rgba(0, 0, 0, 0.16);
+
+  /* Texte (labels iOS) */
+  --label:           #1d1d1f;   /* primaire (quasi-noir Apple) */
+  --label-secondary: #6e6e73;   /* secondaire */
+  --label-tertiary:  #8e8e93;   /* tertiaire */
+
+  /* Couleurs système (light) */
+  --blue:   #0071e3;   /* bleu bouton apple.com */
+  --green:  #34C759;
+  --orange: #FF9500;
+  --yellow: #FFCC00;
+  --red:    #FF3B30;
+  --purple: #AF52DE;
+  --pink:   #FF2D55;
+  --cyan:   #32ADE6;
+
+  /* Rayons */
+  --r-lg: 22px;
+  --r-md: 16px;
+  --r-sm: 12px;
+
+  /* Ombres douces (Apple pose des ombres sur fond clair, pas des bordures) */
+  --shadow-card: 0 1px 2px rgba(0, 0, 0, 0.04), 0 4px 16px rgba(0, 0, 0, 0.06);
+
+  /* Verre dépoli (navbar / overlays) */
+  --glass-bg:   rgba(255, 255, 255, 0.72);
+  --glass-blur: saturate(180%) blur(20px);
+}
+
+/* Expose quelques tokens à Tailwind (bg-bg, text-label, …) */
+@theme inline {
+  --color-bg: var(--bg);
+  --color-elevated: var(--bg-elevated);
+  --color-elevated-2: var(--bg-elevated-2);
+  --color-label: var(--label);
+  --color-label-secondary: var(--label-secondary);
+  --color-label-tertiary: var(--label-tertiary);
+  --color-blue: var(--blue);
+  --color-green: var(--green);
+  --color-orange: var(--orange);
+  --color-red: var(--red);
+  --color-purple: var(--purple);
+  --font-sans: var(--font-sf);
+}
+
+* {
+  border-color: var(--separator);
+}
+
+html {
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
 }
 
 body {
-  background: var(--ev-bg);
-  color: var(--ev-text);
-  font-family: var(--font-inter), system-ui, sans-serif;
+  background: var(--bg);
+  color: var(--label);
+  font-family: var(--font-sf);
+  font-feature-settings: "ss01", "cv11";
+  letter-spacing: -0.011em;
 }
 
 h1, h2, h3, h4, h5, h6 {
-  font-family: var(--font-space-grotesk), system-ui, sans-serif;
+  font-family: var(--font-sf);
+  letter-spacing: -0.022em;
+  font-weight: 600;
 }
 
 input, select, textarea {
-  color: var(--ev-text);
+  color: var(--label);
+  font-family: var(--font-sf);
 }
 
 input::placeholder, textarea::placeholder {
-  color: var(--ev-muted);
+  color: var(--label-tertiary);
 }
 
-::-webkit-scrollbar { width: 6px; height: 6px; }
-::-webkit-scrollbar-track { background: var(--ev-bg); }
-::-webkit-scrollbar-thumb { background: var(--ev-border); border-radius: 3px; }
-::-webkit-scrollbar-thumb:hover { background: #2a4060; }
+/* ---------- Composants réutilisables ---------- */
+
+/* Carte standard */
+.app-card {
+  background: var(--bg-elevated);
+  border: 0.5px solid var(--separator);
+  border-radius: var(--r-lg);
+  box-shadow: var(--shadow-card);
+}
+
+/* Champ de saisie */
+.app-input {
+  width: 100%;
+  background: var(--bg-elevated-2);
+  border: 0.5px solid var(--separator);
+  border-radius: var(--r-sm);
+  padding: 0.75rem 0.9rem;
+  font-size: 0.95rem;
+  color: var(--label);
+  transition: border-color 0.15s ease, box-shadow 0.15s ease, background 0.15s ease;
+}
+.app-input:focus {
+  outline: none;
+  border-color: var(--blue);
+  box-shadow: 0 0 0 3.5px color-mix(in srgb, var(--blue) 22%, transparent);
+  background: var(--bg-elevated);
+}
+
+/* Boutons */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  border-radius: 980px;                 /* pilule Apple */
+  font-weight: 500;
+  font-size: 0.95rem;
+  padding: 0.6rem 1.25rem;
+  transition: transform 0.12s ease, background 0.15s ease, opacity 0.15s ease;
+  cursor: pointer;
+  border: 0.5px solid transparent;
+  letter-spacing: -0.01em;
+}
+.btn:active { transform: scale(0.97); }
+.btn:disabled { opacity: 0.45; cursor: default; }
+
+.btn-primary {
+  background: var(--blue);
+  color: #fff;
+}
+.btn-primary:hover:not(:disabled) {
+  background: color-mix(in srgb, var(--blue) 90%, black);
+}
+
+.btn-secondary {
+  background: var(--bg-elevated-2);
+  color: var(--label);
+  border-color: var(--separator);
+}
+.btn-secondary:hover:not(:disabled) { background: var(--bg-hover); }
+
+.btn-ghost {
+  background: transparent;
+  color: var(--label-secondary);
+}
+.btn-ghost:hover:not(:disabled) {
+  background: var(--bg-elevated-2);
+  color: var(--label);
+}
+
+/* Pilule / badge */
+.pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.3rem 0.7rem;
+  border-radius: 980px;
+  font-size: 0.75rem;
+  font-weight: 500;
+}
+
+/* Eyebrow (petit label de section) */
+.eyebrow {
+  font-size: 0.72rem;
+  font-weight: 500;
+  color: var(--label-secondary);
+  letter-spacing: -0.005em;
+}
+
+/* Navbar en verre dépoli */
+.glass {
+  background: var(--glass-bg);
+  -webkit-backdrop-filter: var(--glass-blur);
+  backdrop-filter: var(--glass-blur);
+}
+
+/* ---------- Scrollbar ---------- */
+::-webkit-scrollbar { width: 8px; height: 8px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb {
+  background: #c7c7cc;
+  border-radius: 980px;
+  border: 2px solid var(--bg);
+}
+::-webkit-scrollbar-thumb:hover { background: #aeaeb2; }
+
+/* Sélection */
+::selection {
+  background: color-mix(in srgb, var(--blue) 22%, transparent);
+  color: var(--label);
+}

@@ -1,6 +1,8 @@
 import { redirect } from 'next/navigation';
 import { createSupabaseServer } from '@/lib/supabase-server';
 import DashboardClient from '@/components/DashboardClient';
+import { getEconomics } from '@/lib/economics';
+import { getDeviceGeo } from '@/lib/device-geo';
 
 type Props = { params: Promise<{ id: string }> };
 
@@ -43,5 +45,16 @@ export default async function DevicePage({ params }: Props) {
     .in('organization_id', orgIds);
   const multiDevice = (count ?? 0) > 1;
 
-  return <DashboardClient deviceId={deviceId} isAdmin={false} multiDevice={multiDevice} />;
+  const [economics, geo] = await Promise.all([getEconomics(deviceId), getDeviceGeo(deviceId)]);
+
+  return (
+    <DashboardClient
+      deviceId={deviceId}
+      isAdmin={false}
+      multiDevice={multiDevice}
+      showHistory={false}
+      economics={economics}
+      geo={geo}
+    />
+  );
 }

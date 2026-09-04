@@ -1,13 +1,9 @@
 import type { Metadata } from "next";
-import { Space_Grotesk, Inter } from "next/font/google";
+import { Inter } from "next/font/google";
 import "./globals.css";
 
-const spaceGrotesk = Space_Grotesk({
-  subsets: ["latin"],
-  variable: "--font-space-grotesk",
-  display: "swap",
-});
-
+// Inter sert de repli sur les appareils non-Apple ; SF Pro prend le relais
+// sur macOS/iOS via la pile système définie dans globals.css.
 const inter = Inter({
   subsets: ["latin"],
   variable: "--font-inter",
@@ -25,11 +21,8 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html
-      lang="fr"
-      className={`${spaceGrotesk.variable} ${inter.variable} h-full antialiased`}
-    >
-      <body className="min-h-full flex flex-col bg-[#050B12] text-[#F5FAFF]">{children}</body>
+    <html lang="fr" className={`${inter.variable} h-full antialiased`}>
+      <body className="min-h-full flex flex-col bg-[#f5f5f7] text-[#1d1d1f]">{children}</body>
     </html>
   );
 }

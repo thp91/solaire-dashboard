@@ -88,35 +88,35 @@ export default function OrgDetailPage({ params }: { params: Promise<{ id: string
   const availableUsers = allUsers.filter((u) => !members.find((m) => m.user_id === u.id));
 
   if (loading) {
-    return <div className="text-gray-400 p-6">Chargement…</div>;
+    return <div className="text-[#6e6e73] p-6">Chargement…</div>;
   }
 
   return (
     <div className="max-w-3xl mx-auto space-y-6">
       <div className="flex items-center gap-3">
-        <Link href="/admin/organizations" className="text-gray-400 hover:text-gray-600 transition text-sm">
+        <Link href="/admin/organizations" className="text-[#6e6e73] hover:text-[#6e6e73] transition text-sm">
           ← Clients
         </Link>
-        <h1 className="text-2xl font-bold text-gray-800">{orgName}</h1>
+        <h1 className="text-[28px] font-semibold tracking-tight text-[#1d1d1f]">{orgName}</h1>
       </div>
 
       {/* Membres */}
-      <section className="bg-white rounded-2xl shadow p-6 space-y-4">
-        <h2 className="text-lg font-semibold text-gray-700">Utilisateurs ({members.length})</h2>
+      <section className="bg-[#ffffff] rounded-2xl shadow p-6 space-y-4">
+        <h2 className="text-lg font-semibold text-[#1d1d1f]">Utilisateurs ({members.length})</h2>
 
         {members.length > 0 ? (
-          <div className="divide-y divide-gray-100">
+          <div className="divide-y divide-[#e5e5ea]">
             {members.map((m) => (
               <div key={m.id} className="flex items-center justify-between py-3">
                 <div>
-                  <p className="text-sm font-medium text-gray-700">{m.email ?? m.user_id}</p>
-                  <p className="text-xs text-gray-300">
+                  <p className="text-sm font-medium text-[#1d1d1f]">{m.email ?? m.user_id}</p>
+                  <p className="text-xs text-[#8e8e93]">
                     Ajouté le {new Date(m.created_at).toLocaleDateString('fr-FR')}
                   </p>
                 </div>
                 <button
                   onClick={() => removeMember(m.id)}
-                  className="text-xs text-red-400 hover:text-red-600 transition"
+                  className="text-xs text-[#FF3B30] hover:text-[#FF3B30] transition"
                 >
                   Retirer
                 </button>
@@ -124,16 +124,16 @@ export default function OrgDetailPage({ params }: { params: Promise<{ id: string
             ))}
           </div>
         ) : (
-          <p className="text-sm text-gray-400">Aucun utilisateur dans ce client.</p>
+          <p className="text-sm text-[#6e6e73]">Aucun utilisateur dans ce client.</p>
         )}
 
         {/* Ajouter un membre */}
         {availableUsers.length > 0 && (
-          <form onSubmit={addMember} className="flex gap-2 pt-2 border-t border-gray-100">
+          <form onSubmit={addMember} className="flex gap-2 pt-2 border-t border-[#e5e5ea]">
             <select
               value={selectedUser}
               onChange={(e) => setSelectedUser(e.target.value)}
-              className="flex-1 border border-gray-200 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-300"
+              className="flex-1 border border-[#e5e5ea] rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#0071e3]"
             >
               <option value="">Sélectionner un utilisateur…</option>
               {availableUsers.map((u) => (
@@ -143,7 +143,7 @@ export default function OrgDetailPage({ params }: { params: Promise<{ id: string
             <button
               type="submit"
               disabled={addingUser || !selectedUser}
-              className="px-4 py-2 bg-blue-500 hover:bg-blue-600 text-white rounded-xl text-sm font-medium transition disabled:opacity-50"
+              className="px-4 py-2 bg-[#0071e3] hover:bg-[#0071e3] text-white rounded-xl text-sm font-medium transition disabled:opacity-50"
             >
               Ajouter
             </button>
@@ -152,25 +152,25 @@ export default function OrgDetailPage({ params }: { params: Promise<{ id: string
       </section>
 
       {/* Modules assignés */}
-      <section className="bg-white rounded-2xl shadow p-6 space-y-4">
-        <h2 className="text-lg font-semibold text-gray-700">Modules ({devices.length})</h2>
+      <section className="bg-[#ffffff] rounded-2xl shadow p-6 space-y-4">
+        <h2 className="text-lg font-semibold text-[#1d1d1f]">Modules ({devices.length})</h2>
 
         {devices.length > 0 ? (
-          <div className="divide-y divide-gray-100">
+          <div className="divide-y divide-[#e5e5ea]">
             {devices.map((d) => (
               <div key={d.id} className="flex items-center justify-between py-3">
                 <div>
-                  <Link href={`/admin/devices/${d.id}`} className="text-sm font-medium text-gray-700 hover:text-blue-600 transition">
+                  <Link href={`/admin/devices/${d.id}`} className="text-sm font-medium text-[#1d1d1f] hover:text-[#0071e3] transition">
                     {d.name ?? d.id}
                   </Link>
-                  <p className="text-xs text-gray-400">
+                  <p className="text-xs text-[#6e6e73]">
                     Firmware {d.firmware ?? '—'} ·{' '}
                     {d.last_seen ? new Date(d.last_seen).toLocaleString('fr-FR') : 'jamais vu'}
                   </p>
                 </div>
                 <button
                   onClick={() => unassignDevice(d.id)}
-                  className="text-xs text-red-400 hover:text-red-600 transition"
+                  className="text-xs text-[#FF3B30] hover:text-[#FF3B30] transition"
                 >
                   Désassigner
                 </button>
@@ -178,16 +178,16 @@ export default function OrgDetailPage({ params }: { params: Promise<{ id: string
             ))}
           </div>
         ) : (
-          <p className="text-sm text-gray-400">Aucun module assigné.</p>
+          <p className="text-sm text-[#6e6e73]">Aucun module assigné.</p>
         )}
 
         {/* Assigner un module non assigné */}
         {unassigned.length > 0 && (
-          <form onSubmit={assignDevice} className="flex gap-2 pt-2 border-t border-gray-100">
+          <form onSubmit={assignDevice} className="flex gap-2 pt-2 border-t border-[#e5e5ea]">
             <select
               value={selectedDevice}
               onChange={(e) => setSelectedDevice(e.target.value)}
-              className="flex-1 border border-gray-200 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-300"
+              className="flex-1 border border-[#e5e5ea] rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#0071e3]"
             >
               <option value="">Assigner un module non attribué…</option>
               {unassigned.map((d) => (
@@ -197,7 +197,7 @@ export default function OrgDetailPage({ params }: { params: Promise<{ id: string
             <button
               type="submit"
               disabled={!selectedDevice}
-              className="px-4 py-2 bg-green-500 hover:bg-green-600 text-white rounded-xl text-sm font-medium transition disabled:opacity-50"
+              className="px-4 py-2 bg-[#34C759] hover:bg-[#34C759] text-white rounded-xl text-sm font-medium transition disabled:opacity-50"
             >
               Assigner
             </button>

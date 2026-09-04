@@ -6,35 +6,36 @@ type Device = { id: string; name: string | null; location: string | null; last_s
 
 export default function DevicePicker({ devices }: { devices: Device[] }) {
   return (
-    <div className="min-h-screen bg-gray-50 flex items-center justify-center p-6">
+    <div className="min-h-screen bg-[#f5f5f7] flex items-center justify-center p-6">
       <div className="w-full max-w-lg">
-        <div className="text-center mb-8">
-          <div className="text-4xl mb-2">☀️</div>
-          <h1 className="text-2xl font-bold text-gray-800">Vos modules</h1>
-          <p className="text-gray-400 text-sm mt-1">Sélectionnez un module à superviser</p>
+        <div className="text-center mb-9">
+          <h1 className="text-[32px] font-semibold text-[#1d1d1f] tracking-tight">Vos modules</h1>
+          <p className="text-[#6e6e73] text-[15px] mt-1.5">Sélectionnez un module à superviser</p>
         </div>
 
-        <div className="space-y-3">
+        <div className="space-y-2.5">
           {devices.map((d) => (
             <Link
               key={d.id}
               href={`/device/${d.id}`}
-              className="flex items-center justify-between bg-white rounded-2xl shadow p-5 hover:shadow-md transition group"
+              className="app-card flex items-center justify-between p-5 hover:bg-[#e5e5ea] transition-colors group"
             >
-              <div>
-                <p className="font-semibold text-gray-800 group-hover:text-blue-600 transition">
+              <div className="min-w-0">
+                <p className="font-semibold text-[#1d1d1f] text-[16px] tracking-tight truncate">
                   {d.name ?? d.id}
                 </p>
                 {d.location && (
-                  <p className="text-xs text-gray-400 mt-0.5">{d.location}</p>
+                  <p className="text-[13px] text-[#6e6e73] mt-0.5">{d.location}</p>
                 )}
                 {d.last_seen && (
-                  <p className="text-xs text-gray-300 mt-0.5">
+                  <p className="text-[12px] text-[#8e8e93] mt-0.5">
                     Dernière activité : {new Date(d.last_seen).toLocaleString('fr-FR')}
                   </p>
                 )}
               </div>
-              <span className="text-gray-300 group-hover:text-blue-400 text-xl transition">→</span>
+              <span className="text-[#8e8e93] group-hover:text-[#0071e3] text-xl transition ml-4 flex-shrink-0">
+                ›
+              </span>
             </Link>
           ))}
         </div>

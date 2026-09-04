@@ -12,6 +12,8 @@ export default function Controls({ deviceId }: Props) {
   const [loading, setLoading]       = useState(false);
   const [otaFile, setOtaFile]       = useState<File | null>(null);
   const [otaStatus, setOtaStatus]   = useState('');
+  const [simBusy, setSimBusy]       = useState(false);
+  const [simMsg, setSimMsg]         = useState('');
 
   useEffect(() => {
     supabase
@@ -59,6 +61,25 @@ export default function Controls({ deviceId }: Props) {
     setLoading(false);
   }
 
+  async function simulate() {
+    setSimBusy(true);
+    setSimMsg('');
+    try {
+      const res = await fetch('/api/admin/simulate', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ deviceId }),
+      });
+      const d = await res.json();
+      setSimMsg(res.ok ? `✓ ${d.points} points injectés` : `Erreur : ${d.error ?? '—'}`);
+    } catch {
+      setSimMsg('Erreur réseau');
+    } finally {
+      setSimBusy(false);
+      setTimeout(() => setSimMsg(''), 4000);
+    }
+  }
+
   async function sendOta() {
     if (!otaFile) return;
     setOtaStatus('Envoi en cours...');
@@ -74,31 +95,47 @@ export default function Controls({ deviceId }: Props) {
   }
 
   return (
-    <div className="bg-[#0B1B2B] border border-[#1A2D42] rounded-2xl p-6 space-y-6">
+    <div className="bg-[#ffffff] border border-[#e5e5ea] rounded-2xl p-6 space-y-6">
       <div>
-        <h2 className="text-base font-semibold text-[#F5FAFF] mb-3">Flux de données</h2>
-        <button
-          onClick={toggleFlux}
-          disabled={loading || publishing === null}
-          className={`px-5 py-2.5 rounded-xl font-semibold text-sm transition disabled:opacity-50 ${
-            publishing !== false
-              ? 'bg-[#FF4D6D]/10 text-[#FF4D6D] border border-[#FF4D6D]/30 hover:bg-[#FF4D6D]/20'
-              : 'bg-[#42F5A7]/10 text-[#42F5A7] border border-[#42F5A7]/30 hover:bg-[#42F5A7]/20'
-          }`}
-        >
-          {publishing === null
-            ? 'Chargement…'
-            : publishing
-              ? '⏹ Arrêter'
-              : '▶ Démarrer'
-          }
-        </button>
+        <h2 className="text-base font-semibold text-[#1d1d1f] mb-3">Flux de données</h2>
+        <div className="flex items-center gap-3 flex-wrap">
+          <button
+            onClick={toggleFlux}
+            disabled={loading || publishing === null}
+            className={`px-5 py-2.5 rounded-xl font-semibold text-sm transition disabled:opacity-50 ${
+              publishing !== false
+                ? 'bg-[#FF3B30]/10 text-[#FF3B30] border border-[#FF3B30]/30 hover:bg-[#FF3B30]/20'
+                : 'bg-[#34C759]/10 text-[#34C759] border border-[#34C759]/30 hover:bg-[#34C759]/20'
+            }`}
+          >
+            {publishing === null
+              ? 'Chargement…'
+              : publishing
+                ? '⏹ Arrêter'
+                : '▶ Démarrer'
+            }
+          </button>
+
+          <button
+            onClick={simulate}
+            disabled={simBusy}
+            title="Injecte des données réalistes (mode test, sans boîtier physique)"
+            className="px-5 py-2.5 rounded-xl font-semibold text-sm transition disabled:opacity-50 bg-[#0071e3]/10 text-[#0071e3] border border-[#0071e3]/30 hover:bg-[#0071e3]/20"
+          >
+            {simBusy ? 'Simulation…' : '🧪 Test — simuler des données'}
+          </button>
+
+          {simMsg && <span className="text-sm text-[#6e6e73]">{simMsg}</span>}
+        </div>
+        <p className="text-xs text-[#8e8e93] mt-2">
+          Le bouton test génère ~30 mesures des 30 dernières minutes (plein jour) sur les sondes, le débitmètre et la pompe.
+        </p>
       </div>
 
       <div>
-        <h2 className="text-base font-semibold text-[#F5FAFF] mb-3">Mise à jour firmware (OTA)</h2>
+        <h2 className="text-base font-semibold text-[#1d1d1f] mb-3">Mise à jour firmware (OTA)</h2>
         <div className="flex gap-3 items-center flex-wrap">
-          <label className="cursor-pointer px-4 py-2.5 bg-[#050B12] border border-[#1A2D42] hover:border-[#7A8A99] rounded-xl text-sm font-medium text-[#7A8A99] hover:text-[#F5FAFF] transition">
+          <label className="cursor-pointer px-4 py-2.5 bg-[#f2f2f7] border border-[#e5e5ea] hover:border-[#6e6e73] rounded-xl text-sm font-medium text-[#6e6e73] hover:text-[#1d1d1f] transition">
             ↑ {otaFile ? otaFile.name : 'Choisir un .bin'}
             <input
               type="file"
@@ -110,12 +147,12 @@ export default function Controls({ deviceId }: Props) {
           <button
             onClick={sendOta}
             disabled={!otaFile}
-            className="px-4 py-2.5 bg-[#00D4FF]/10 text-[#00D4FF] border border-[#00D4FF]/30 hover:bg-[#00D4FF]/20 rounded-xl font-semibold text-sm transition disabled:opacity-50"
+            className="px-4 py-2.5 bg-[#0071e3]/10 text-[#0071e3] border border-[#0071e3]/30 hover:bg-[#0071e3]/20 rounded-xl font-semibold text-sm transition disabled:opacity-50"
           >
             Flash OTA
           </button>
         </div>
-        {otaStatus && <p className="mt-2 text-sm text-[#7A8A99]">{otaStatus}</p>}
+        {otaStatus && <p className="mt-2 text-sm text-[#6e6e73]">{otaStatus}</p>}
       </div>
     </div>
   );

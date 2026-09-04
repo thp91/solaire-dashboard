@@ -68,13 +68,13 @@ export default function UsersAdminPage() {
   return (
     <div className="max-w-3xl mx-auto space-y-6">
       <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-bold text-gray-800">Utilisateurs</h1>
-        <span className="text-sm text-gray-400">{users.length} compte{users.length > 1 ? 's' : ''}</span>
+        <h1 className="text-[28px] font-semibold tracking-tight text-[#1d1d1f]">Utilisateurs</h1>
+        <span className="text-sm text-[#6e6e73]">{users.length} compte{users.length > 1 ? 's' : ''}</span>
       </div>
 
       {/* Créer un utilisateur */}
-      <form onSubmit={createUser} className="bg-white rounded-2xl shadow p-6 space-y-4">
-        <h2 className="text-base font-semibold text-gray-700">Nouveau compte</h2>
+      <form onSubmit={createUser} className="bg-[#ffffff] rounded-2xl shadow p-6 space-y-4">
+        <h2 className="text-base font-semibold text-[#1d1d1f]">Nouveau compte</h2>
         <div className="grid grid-cols-2 gap-3">
           <input
             type="email"
@@ -82,7 +82,7 @@ export default function UsersAdminPage() {
             value={email}
             onChange={(e) => setEmail(e.target.value)}
             required
-            className="col-span-2 border border-gray-200 rounded-xl px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-300"
+            className="col-span-2 border border-[#e5e5ea] rounded-xl px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#0071e3]"
           />
           <input
             type="password"
@@ -91,55 +91,55 @@ export default function UsersAdminPage() {
             onChange={(e) => setPassword(e.target.value)}
             required
             minLength={6}
-            className="border border-gray-200 rounded-xl px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-300"
+            className="border border-[#e5e5ea] rounded-xl px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#0071e3]"
           />
           <select
             value={role}
             onChange={(e) => setRole(e.target.value as 'admin' | 'client')}
-            className="border border-gray-200 rounded-xl px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-300"
+            className="border border-[#e5e5ea] rounded-xl px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#0071e3]"
           >
             <option value="client">Client</option>
             <option value="admin">Admin</option>
           </select>
         </div>
         {createError && (
-          <p className="text-sm text-red-500 bg-red-50 rounded-xl px-4 py-2">{createError}</p>
+          <p className="text-sm text-[#FF3B30] bg-[#e5e5ea] rounded-xl px-4 py-2">{createError}</p>
         )}
         <button
           type="submit"
           disabled={creating}
-          className="px-5 py-2 bg-blue-500 hover:bg-blue-600 text-white rounded-xl text-sm font-medium transition disabled:opacity-50"
+          className="px-5 py-2 bg-[#0071e3] hover:bg-[#0071e3] text-white rounded-xl text-sm font-medium transition disabled:opacity-50"
         >
           {creating ? 'Création…' : '+ Créer le compte'}
         </button>
       </form>
 
       {/* Liste */}
-      <div className="bg-white rounded-2xl shadow divide-y divide-gray-100">
+      <div className="bg-[#ffffff] rounded-2xl shadow divide-y divide-[#e5e5ea]">
         {loading ? (
-          <p className="p-6 text-gray-400 text-sm">Chargement…</p>
+          <p className="p-6 text-[#6e6e73] text-sm">Chargement…</p>
         ) : users.length === 0 ? (
-          <p className="p-6 text-gray-400 text-sm">Aucun utilisateur.</p>
+          <p className="p-6 text-[#6e6e73] text-sm">Aucun utilisateur.</p>
         ) : (
           users.map((u) => (
             <div key={u.id} className="flex items-center gap-4 p-4">
               <div className="flex-1 min-w-0">
-                <p className="text-sm font-medium text-gray-800 truncate">{u.email}</p>
-                <p className="text-xs text-gray-300">
+                <p className="text-sm font-medium text-[#1d1d1f] truncate">{u.email}</p>
+                <p className="text-xs text-[#8e8e93]">
                   Créé le {new Date(u.created_at).toLocaleDateString('fr-FR')}
                 </p>
               </div>
               <select
                 value={u.role}
                 onChange={(e) => changeRole(u.id, e.target.value as 'admin' | 'client')}
-                className="border border-gray-200 rounded-xl px-3 py-1.5 text-xs focus:outline-none"
+                className="border border-[#e5e5ea] rounded-xl px-3 py-1.5 text-xs focus:outline-none"
               >
                 <option value="client">Client</option>
                 <option value="admin">Admin</option>
               </select>
               <button
                 onClick={() => deleteUser(u.id)}
-                className="text-xs text-red-400 hover:text-red-600 transition"
+                className="text-xs text-[#FF3B30] hover:text-[#FF3B30] transition"
               >
                 Supprimer
               </button>

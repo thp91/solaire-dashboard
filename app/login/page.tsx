@@ -30,72 +30,63 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="min-h-screen bg-[#050B12] flex items-center justify-center p-4 relative overflow-hidden">
-      <div
-        className="absolute inset-0 opacity-[0.04]"
-        style={{
-          backgroundImage: 'linear-gradient(#1A2D42 1px, transparent 1px), linear-gradient(90deg, #1A2D42 1px, transparent 1px)',
-          backgroundSize: '40px 40px',
-        }}
+    <div className="min-h-screen bg-[#f5f5f7] flex items-center justify-center p-4 relative overflow-hidden">
+      {/* Halo lumineux discret */}
+      <div className="absolute top-[-10%] left-1/2 -translate-x-1/2 w-[520px] h-[520px] rounded-full pointer-events-none"
+        style={{ background: 'radial-gradient(circle, rgba(10,132,255,0.14), transparent 60%)' }}
       />
-      <div className="absolute top-1/4 left-1/2 -translate-x-1/2 w-96 h-96 bg-[#00D4FF]/5 rounded-full blur-3xl pointer-events-none" />
 
-      <div className="relative w-full max-w-sm">
-        <div className="bg-[#0B1B2B] border border-[#1A2D42] rounded-2xl p-8 shadow-2xl">
-          <div className="flex justify-center mb-6">
-            <Image src="/logo.png" alt="EnerVisio" width={160} height={64} className="object-contain" priority />
+      <div className="relative w-full max-w-[380px]">
+        <div className="app-card p-9 shadow-xl shadow-black/[0.06]">
+          <div className="flex justify-center mb-7">
+            <Image src="/logo.png" alt="EnerVisio" width={150} height={60} className="object-contain" priority />
           </div>
 
-          <p className="text-center text-sm text-[#7A8A99] mb-8">Connexion à votre espace</p>
+          <h1 className="text-center text-[22px] font-semibold text-[#1d1d1f] tracking-tight">Bienvenue</h1>
+          <p className="text-center text-[15px] text-[#6e6e73] mt-1 mb-8">Connexion à votre espace</p>
 
           <form onSubmit={handleLogin} className="space-y-4">
             <div>
-              <label className="block text-xs font-medium text-[#7A8A99] uppercase tracking-widest mb-2">
-                Email
-              </label>
+              <label className="block text-[13px] font-medium text-[#6e6e73] mb-1.5">Email</label>
               <input
                 type="email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 required
                 autoComplete="email"
-                className="w-full bg-[#050B12] border border-[#1A2D42] rounded-xl px-4 py-3 text-sm text-[#F5FAFF] focus:outline-none focus:border-[#00D4FF] focus:ring-1 focus:ring-[#00D4FF] transition"
+                className="app-input"
                 placeholder="vous@exemple.com"
               />
             </div>
 
             <div>
-              <label className="block text-xs font-medium text-[#7A8A99] uppercase tracking-widest mb-2">
-                Mot de passe
-              </label>
+              <label className="block text-[13px] font-medium text-[#6e6e73] mb-1.5">Mot de passe</label>
               <input
                 type="password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 required
                 autoComplete="current-password"
-                className="w-full bg-[#050B12] border border-[#1A2D42] rounded-xl px-4 py-3 text-sm text-[#F5FAFF] focus:outline-none focus:border-[#00D4FF] focus:ring-1 focus:ring-[#00D4FF] transition"
+                className="app-input"
                 placeholder="••••••••"
               />
             </div>
 
             {error && (
-              <p className="text-sm text-[#FF4D6D] bg-[#FF4D6D]/10 border border-[#FF4D6D]/20 rounded-xl px-4 py-2">{error}</p>
+              <p className="text-[13px] text-[#FF3B30] bg-[#FF3B30]/10 border border-[#FF3B30]/20 rounded-xl px-4 py-2.5">
+                {error}
+              </p>
             )}
 
-            <button
-              type="submit"
-              disabled={loading}
-              className="w-full py-3 bg-gradient-to-r from-[#00D4FF] to-[#42F5A7] text-[#050B12] font-semibold rounded-xl text-sm transition hover:opacity-90 disabled:opacity-50 mt-2"
-            >
+            <button type="submit" disabled={loading} className="btn btn-primary w-full mt-2">
               {loading ? 'Connexion…' : 'Se connecter'}
             </button>
           </form>
-
-          <p className="text-center text-xs text-[#7A8A99]/50 mt-8 font-[var(--font-space-grotesk)]">
-            Vos installations, enfin visibles.
-          </p>
         </div>
+
+        <p className="text-center text-[13px] text-[#8e8e93] mt-6">
+          Vos installations, enfin visibles.
+        </p>
       </div>
     </div>
   );

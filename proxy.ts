@@ -28,8 +28,8 @@ export async function proxy(request: NextRequest) {
 
   const path = request.nextUrl.pathname;
 
-  // Routes publiques
-  if (path.startsWith('/login') || path.startsWith('/api')) {
+  // Routes publiques (login, API, et pages technicien via QR code)
+  if (path.startsWith('/login') || path.startsWith('/api') || path.startsWith('/t/')) {
     return supabaseResponse;
   }
 

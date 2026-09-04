@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react';
 import { supabase, Temperature, Etat, Debit } from '@/lib/supabase';
 import TemperatureChart from '@/components/TemperatureChart';
-import StatusCards from '@/components/StatusCards';
+import LiveMetricsPanel from '@/components/LiveMetricsPanel';
 import Controls from '@/components/Controls';
 import HistorySection from '@/components/HistorySection';
 import ClientNavbar from '@/components/ClientNavbar';
@@ -12,13 +12,27 @@ import SolarSchemaView, { SchemaLiveData } from '@/components/SolarSchemaView';
 import EnergySection from '@/components/EnergySection';
 import AlertBanner from '@/components/AlertBanner';
 import DeviceSettings from '@/components/DeviceSettings';
+import ClientTabs from '@/components/ClientTabs';
+import EconomicsSummary from '@/components/EconomicsSummary';
+import LiveGauge from '@/components/LiveGauge';
 import { SchemaConfig } from '@/lib/schema-types';
+import type { Economics } from '@/lib/economics';
+import type { DeviceGeo } from '@/lib/device-geo';
 
 const HISTORY_SIZE = 60;
 
-type Props = { deviceId: string; isAdmin?: boolean; multiDevice?: boolean };
+type Props = {
+  deviceId: string;
+  isAdmin?: boolean;
+  multiDevice?: boolean;
+  showHistory?: boolean;
+  economics?: Economics | null;
+  geo?: DeviceGeo | null;
+};
 
-export default function DashboardClient({ deviceId, isAdmin, multiDevice }: Props) {
+export default function DashboardClient({
+  deviceId, isAdmin, multiDevice, showHistory = true, economics = null, geo = null,
+}: Props) {
   const [temperatures, setTemperatures] = useState<Temperature[]>([]);
   const [lastEtat, setLastEtat]         = useState<Etat | null>(null);
   const [lastDebit, setLastDebit]       = useState<Debit | null>(null);
@@ -49,7 +63,10 @@ export default function DashboardClient({ deviceId, isAdmin, multiDevice }: Prop
       if (temps)      setTemperatures([...temps].reverse());
       if (etats?.[0]) setLastEtat(etats[0]);
       if (debits?.[0]) setLastDebit(debits[0]);
-      if (device) { setLastSeen(device.last_seen); setPublishing(device.publishing ?? true); setDeviceName(device.name ?? null); }
+      if (device) {
+        setLastSeen(device.last_seen); setPublishing(device.publishing ?? true);
+        setDeviceName(device.name ?? null);
+      }
       if (schemaRow?.config) setSchema(schemaRow.config as SchemaConfig);
     }
     load();
@@ -132,31 +149,41 @@ export default function DashboardClient({ deviceId, isAdmin, multiDevice }: Prop
   };
 
   return (
-    <div className="min-h-screen bg-[#050B12] flex flex-col">
+    <div className="min-h-screen bg-[#f2f2f7] flex flex-col">
       {!isAdmin && <ClientNavbar deviceId={deviceId} showBack={multiDevice} />}
+      {!isAdmin && <ClientTabs deviceId={deviceId} active="overview" />}
 
-      <main className="flex-1 p-6">
-        <div className="max-w-5xl mx-auto space-y-5">
+      <main className="flex-1 px-6 py-8">
+        <div className="max-w-5xl mx-auto space-y-6">
 
           {/* Header */}
-          <div className="flex items-center justify-between flex-wrap gap-3 pb-2">
+          <div className="flex items-end justify-between flex-wrap gap-3 pb-1">
             <div>
-              {isAdmin && <p className="text-[10px] text-[#7A8A99] uppercase tracking-widest mb-1">Module</p>}
-              <h1 className="text-2xl font-bold text-[#F5FAFF] tracking-tight">
+              {isAdmin && <p className="eyebrow mb-1.5">Module</p>}
+              <h1 className="text-[30px] leading-tight font-semibold text-[#1d1d1f] tracking-tight">
                 {deviceName || schema?.installation_name || (isAdmin ? deviceId : 'Mon installation')}
               </h1>
-              {isAdmin && <p className="text-xs text-[#1A2D42] font-mono mt-0.5">{deviceId}</p>}
+              {isAdmin && <p className="text-[12px] text-[#8e8e93] font-mono mt-1">{deviceId}</p>}
             </div>
             <div className="flex items-center gap-3">
               <DeviceStatus lastSeen={lastSeen} publishing={publishing} />
               {isAdmin && (
                 <a href={`/admin/devices/${deviceId}/schema`}
-                  className="px-3 py-1.5 text-xs border border-[#1A2D42] rounded-xl text-[#7A8A99] hover:bg-[#0B1B2B] hover:border-[#7A8A99] hover:text-[#F5FAFF] transition">
+                  className="btn btn-secondary !py-1.5 !px-3.5 !text-[13px]">
                   Schéma
+                </a>
+              )}
+              {isAdmin && (
+                <a href={`/admin/devices/${deviceId}/public`}
+                  className="btn btn-secondary !py-1.5 !px-3.5 !text-[13px]">
+                  QR technicien
                 </a>
               )}
             </div>
           </div>
+
+          {/* Cadran température + heure + météo du lieu */}
+          <LiveGauge data={lastTemp ?? null} location={geo?.location ?? null} lat={geo?.lat ?? null} lon={geo?.lon ?? null} />
 
           {/* Alertes */}
           <AlertBanner deviceId={deviceId} isAdmin={isAdmin} />
@@ -164,81 +191,40 @@ export default function DashboardClient({ deviceId, isAdmin, multiDevice }: Prop
           {/* Schéma interactif */}
           {schema && <SolarSchemaView config={schema} live={liveForSchema} />}
           {!schema && isAdmin && (
-            <div className="bg-[#0B1B2B] border border-[#1A2D42] rounded-2xl p-6 text-center">
-              <p className="text-[#7A8A99] text-sm mb-3">Aucun schéma configuré pour ce module.</p>
-              <a href={`/admin/devices/${deviceId}/schema`}
-                className="inline-block px-5 py-2 bg-[#00D4FF]/10 text-[#00D4FF] border border-[#00D4FF]/30 hover:bg-[#00D4FF]/20 rounded-xl text-sm font-semibold transition">
-                Configurer le schéma →
+            <div className="app-card p-8 text-center">
+              <p className="text-[#6e6e73] text-[15px] mb-4">Aucun schéma configuré pour ce module.</p>
+              <a href={`/admin/devices/${deviceId}/schema`} className="btn btn-primary">
+                Configurer le schéma
               </a>
             </div>
           )}
 
-          {/* Températures instantanées VBus */}
-          {lastTemp && (
-            <div className="space-y-3">
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-                {lastTemp.capteur_solaire != null && (
-                  <TempCard label="Capteur solaire" value={lastTemp.capteur_solaire} color="#FFD166" />
-                )}
-                {lastTemp.ballon_haut != null && (
-                  <TempCard label="Ballon haut" value={lastTemp.ballon_haut} color="#00D4FF" />
-                )}
-                {lastTemp.ballon_bas != null && (
-                  <TempCard label="Ballon bas" value={lastTemp.ballon_bas} color="#42F5A7" />
-                )}
-                {lastTemp.retour_solaire != null && (
-                  <TempCard label="Retour solaire" value={lastTemp.retour_solaire} color="#a78bfa" />
-                )}
-                {lastTemp.ambiance != null && (
-                  <TempCard label="Ambiance" value={lastTemp.ambiance} color="#7A8A99" />
-                )}
-              </div>
-
-              {/* Sondes additionnelles DS18B20 */}
-              {[1, 2, 3, 4, 5].some((n) => (lastTemp as any)[`sonde_${n}`] != null) && (
-                <div className="grid grid-cols-3 md:grid-cols-5 gap-3">
-                  {[1, 2, 3, 4, 5].map((n) => {
-                    const v = (lastTemp as any)[`sonde_${n}`];
-                    return v != null ? (
-                      <TempCard key={n} label={`Sonde ${n}`} value={v} color="#42F5A7" border />
-                    ) : null;
-                  })}
-                </div>
-              )}
-            </div>
-          )}
-
-          <StatusCards etat={lastEtat} debit={lastDebit} esp32Temp={lastTemp?.esp32_temp} />
+          {/* Mesures en temps réel — regroupées dans une seule carte, cellules grises */}
+          <LiveMetricsPanel lastTemp={lastTemp ?? null} etat={lastEtat} debit={lastDebit} />
 
           {temperatures.length > 0
             ? <TemperatureChart data={temperatures} />
             : (
-              <div className="bg-[#0B1B2B] border border-[#1A2D42] rounded-2xl p-10 text-center text-[#7A8A99]">
+              <div className="app-card p-12 text-center text-[#6e6e73] text-[15px]">
                 En attente de données…
               </div>
             )
           }
 
+          {/* Économies & impact */}
+          {economics && <EconomicsSummary eco={economics} />}
+
           {/* Énergie */}
-          <div className="bg-[#0B1B2B] border border-[#1A2D42] rounded-2xl p-6 space-y-4">
-            <h2 className="text-base font-semibold text-[#F5FAFF]">Énergie solaire</h2>
+          <div className="app-card p-6 space-y-4">
+            <h2 className="text-[17px] font-semibold text-[#1d1d1f] tracking-tight">Énergie solaire</h2>
             <EnergySection deviceId={deviceId} />
           </div>
 
           {isAdmin && <DeviceSettings deviceId={deviceId} />}
           {isAdmin && <Controls deviceId={deviceId} />}
-          <HistorySection deviceId={deviceId} />
+          {showHistory && <HistorySection deviceId={deviceId} />}
         </div>
       </main>
-    </div>
-  );
-}
-
-function TempCard({ label, value, color, border }: { label: string; value: number; color: string; border?: boolean }) {
-  return (
-    <div className={`bg-[#0B1B2B] rounded-2xl p-4 text-center ${border ? 'border border-[#42F5A7]/20' : 'border border-[#1A2D42]'}`}>
-      <p className="text-[10px] text-[#7A8A99] uppercase tracking-widest mb-2">{label}</p>
-      <p className="text-2xl font-bold" style={{ color }}>{Number(value).toFixed(1)}°C</p>
     </div>
   );
 }

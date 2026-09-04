@@ -24,23 +24,23 @@ export default function AdminSidebar({ userEmail }: { userEmail: string }) {
   }
 
   return (
-    <aside className="w-56 bg-[#0B1B2B] flex flex-col border-r border-[#1A2D42] min-h-screen">
-      <div className="p-5 border-b border-[#1A2D42]">
+    <aside className="w-60 glass flex flex-col border-r border-[var(--separator)] min-h-screen">
+      <div className="p-5 border-b border-[var(--separator)]">
         <Image src="/logo.png" alt="EnerVisio" width={130} height={52} className="object-contain" priority />
-        <p className="text-[10px] text-[#00D4FF] font-semibold tracking-widest uppercase mt-2 ml-0.5">Admin</p>
+        <p className="text-[12px] text-[#6e6e73] font-medium mt-2 ml-0.5">Administration</p>
       </div>
 
-      <nav className="flex-1 p-3 space-y-0.5">
+      <nav className="flex-1 p-3 space-y-1">
         {NAV.map(({ href, icon, label }) => {
           const active = href === '/admin' ? pathname === '/admin' : pathname.startsWith(href);
           return (
             <Link
               key={href}
               href={href}
-              className={`flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition ${
+              className={`flex items-center gap-3 px-3 py-2.5 rounded-[10px] text-[14px] font-medium transition ${
                 active
-                  ? 'bg-[#00D4FF]/10 text-[#00D4FF] border border-[#00D4FF]/20'
-                  : 'text-[#7A8A99] hover:bg-[#1A2D42]/50 hover:text-[#F5FAFF]'
+                  ? 'bg-[#0071e3] text-white'
+                  : 'text-[#6e6e73] hover:bg-[#e5e5ea] hover:text-[#1d1d1f]'
               }`}
             >
               <span className="text-base leading-none">{icon}</span>
@@ -50,11 +50,11 @@ export default function AdminSidebar({ userEmail }: { userEmail: string }) {
         })}
       </nav>
 
-      <div className="p-4 border-t border-[#1A2D42]">
-        <p className="text-xs text-[#7A8A99] truncate mb-3">{userEmail}</p>
+      <div className="p-4 border-t border-[var(--separator)]">
+        <p className="text-[12px] text-[#6e6e73] truncate mb-3">{userEmail}</p>
         <button
           onClick={logout}
-          className="w-full text-left text-xs text-[#7A8A99] hover:text-[#FF4D6D] transition px-1"
+          className="w-full text-left text-xs text-[#6e6e73] hover:text-[#FF3B30] transition px-1"
         >
           Se déconnecter →
         </button>

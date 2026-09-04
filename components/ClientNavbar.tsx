@@ -17,20 +17,20 @@ export default function ClientNavbar({ deviceId, showBack }: Props) {
   }
 
   return (
-    <header className="bg-[#0B1B2B] border-b border-[#1A2D42] px-6 py-3 flex items-center justify-between">
+    <header className="glass sticky top-0 z-40 border-b border-[var(--separator)] px-6 py-3 flex items-center justify-between">
       <div className="flex items-center gap-5">
-        <Image src="/logo.png" alt="EnerVisio" width={110} height={44} className="object-contain" priority />
+        <Image src="/logo.png" alt="EnerVisio" width={104} height={42} className="object-contain" priority />
         {showBack && (
-          <Link href="/" className="text-xs text-[#7A8A99] hover:text-[#00D4FF] transition">
+          <Link href="/" className="text-[13px] text-[#6e6e73] hover:text-[#1d1d1f] transition">
             ← Mes modules
           </Link>
         )}
       </div>
       <div className="flex items-center gap-5">
-        <span className="text-xs text-[#1A2D42] hidden sm:block font-mono tracking-wider">{deviceId}</span>
+        <span className="text-[12px] text-[#8e8e93] hidden sm:block font-mono">{deviceId}</span>
         <button
           onClick={logout}
-          className="text-xs text-[#7A8A99] hover:text-[#FF4D6D] transition font-medium"
+          className="text-[13px] text-[#6e6e73] hover:text-[#1d1d1f] transition font-medium"
         >
           Se déconnecter
         </button>

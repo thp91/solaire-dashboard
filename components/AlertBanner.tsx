@@ -30,17 +30,17 @@ export default function AlertBanner({ deviceId, isAdmin }: Props) {
       {alertes.map((a) => (
         <div
           key={a.id}
-          className="flex items-start gap-3 bg-[#FFD166]/5 border border-[#FFD166]/20 rounded-2xl px-4 py-3"
+          className="flex items-start gap-3 bg-[#FF9500]/5 border border-[#FF9500]/20 rounded-2xl px-4 py-3"
         >
           <span className="text-base mt-0.5">{a.type === 'antigel' ? '❄️' : '⚠️'}</span>
           <div className="flex-1 min-w-0">
-            <p className="text-sm font-medium text-[#FFD166]">{a.message}</p>
-            <p className="text-xs text-[#7A8A99] mt-0.5">{new Date(a.created_at).toLocaleString('fr-FR')}</p>
+            <p className="text-sm font-medium text-[#FF9500]">{a.message}</p>
+            <p className="text-xs text-[#6e6e73] mt-0.5">{new Date(a.created_at).toLocaleString('fr-FR')}</p>
           </div>
           {isAdmin && (
             <button
               onClick={() => resolve(a.id)}
-              className="text-xs text-[#7A8A99] hover:text-[#FFD166] font-medium whitespace-nowrap transition"
+              className="text-xs text-[#6e6e73] hover:text-[#FF9500] font-medium whitespace-nowrap transition"
             >
               Résoudre
             </button>

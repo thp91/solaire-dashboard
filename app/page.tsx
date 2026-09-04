@@ -26,11 +26,11 @@ export default async function RootPage() {
 
   if (orgIds.length === 0) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <div className="bg-white rounded-2xl shadow p-10 text-center max-w-sm">
-          <div className="text-4xl mb-3">☀️</div>
-          <p className="text-gray-600 font-medium">Aucun module assigné</p>
-          <p className="text-gray-400 text-sm mt-2">
+      <div className="min-h-screen bg-[#f5f5f7] flex items-center justify-center p-6">
+        <div className="app-card p-10 text-center max-w-sm">
+          <div className="text-4xl mb-4">☀️</div>
+          <p className="text-[#1d1d1f] font-semibold text-[17px] tracking-tight">Aucun module assigné</p>
+          <p className="text-[#6e6e73] text-[14px] mt-2 leading-relaxed">
             Contactez votre administrateur pour accéder à vos données.
           </p>
         </div>

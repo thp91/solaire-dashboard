@@ -19,10 +19,10 @@ function computeStatus(lastSeen: string | null, publishing: boolean): StatusLeve
 }
 
 const STATUS_CONFIG: Record<StatusLevel, { label: string; dot: string; bg: string; text: string }> = {
-  running:  { label: 'En fonctionnement',  dot: '#42F5A7', bg: 'bg-[#42F5A7]/10 border border-[#42F5A7]/20', text: 'text-[#42F5A7]' },
-  stopped:  { label: 'Flux arrêté',        dot: '#FF4D6D', bg: 'bg-[#FF4D6D]/10 border border-[#FF4D6D]/20', text: 'text-[#FF4D6D]' },
-  unstable: { label: 'Connexion instable', dot: '#FFD166', bg: 'bg-[#FFD166]/10 border border-[#FFD166]/20', text: 'text-[#FFD166]' },
-  offline:  { label: 'Hors ligne',         dot: '#7A8A99', bg: 'bg-[#7A8A99]/10 border border-[#7A8A99]/20', text: 'text-[#7A8A99]' },
+  running:  { label: 'En fonctionnement',  dot: '#34C759', bg: 'bg-[#34C759]/10 border border-[#34C759]/20', text: 'text-[#34C759]' },
+  stopped:  { label: 'Flux arrêté',        dot: '#FF3B30', bg: 'bg-[#FF3B30]/10 border border-[#FF3B30]/20', text: 'text-[#FF3B30]' },
+  unstable: { label: 'Connexion instable', dot: '#FF9500', bg: 'bg-[#FF9500]/10 border border-[#FF9500]/20', text: 'text-[#FF9500]' },
+  offline:  { label: 'Hors ligne',         dot: '#6e6e73', bg: 'bg-[#6e6e73]/10 border border-[#6e6e73]/20', text: 'text-[#6e6e73]' },
 };
 
 export default function DeviceStatus({ lastSeen, publishing }: Props) {

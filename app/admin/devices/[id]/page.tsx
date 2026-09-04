@@ -1,6 +1,8 @@
 import { createSupabaseServer } from '@/lib/supabase-server';
 import { redirect } from 'next/navigation';
 import DashboardClient from '@/components/DashboardClient';
+import { getEconomics } from '@/lib/economics';
+import { getDeviceGeo } from '@/lib/device-geo';
 
 type Props = { params: Promise<{ id: string }> };
 
@@ -16,5 +18,7 @@ export default async function AdminDeviceDetailPage({ params }: Props) {
 
   if (!device) redirect('/admin/devices');
 
-  return <DashboardClient deviceId={deviceId} isAdmin />;
+  const [economics, geo] = await Promise.all([getEconomics(deviceId), getDeviceGeo(deviceId)]);
+
+  return <DashboardClient deviceId={deviceId} isAdmin economics={economics} geo={geo} />;
 }

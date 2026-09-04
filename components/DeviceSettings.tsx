@@ -10,6 +10,8 @@ export default function DeviceSettings({ deviceId }: Props) {
   const [location, setLocation] = useState('');
   const [lat, setLat]           = useState<number | null>(null);
   const [lon, setLon]           = useState<number | null>(null);
+  const [tarif, setTarif]       = useState<string>('');
+  const [installCost, setInstallCost] = useState<string>('');
   const [saving, setSaving]     = useState(false);
   const [geocoding, setGeocoding] = useState(false);
   const [saved, setSaved]       = useState(false);
@@ -18,10 +20,14 @@ export default function DeviceSettings({ deviceId }: Props) {
     async function load() {
       const [{ data: device }, { data: cfg }] = await Promise.all([
         supabase.from('devices').select('name,location').eq('id', deviceId).single(),
-        supabase.from('energy_config').select('location_lat,location_lon').eq('device_id', deviceId).maybeSingle(),
+        supabase.from('energy_config').select('location_lat,location_lon,tarif_kwh,install_cost').eq('device_id', deviceId).maybeSingle(),
       ]);
       if (device) { setName(device.name ?? ''); setLocation(device.location ?? ''); }
-      if (cfg) { setLat(cfg.location_lat); setLon(cfg.location_lon); }
+      if (cfg) {
+        setLat(cfg.location_lat); setLon(cfg.location_lon);
+        setTarif(cfg.tarif_kwh != null ? String(cfg.tarif_kwh) : '');
+        setInstallCost(cfg.install_cost != null ? String(cfg.install_cost) : '');
+      }
     }
     load();
   }, [deviceId]);
@@ -43,7 +49,13 @@ export default function DeviceSettings({ deviceId }: Props) {
     setSaving(true);
     await supabase.from('devices').update({ name: name || null, location: location || null }).eq('id', deviceId);
     await supabase.from('energy_config').upsert(
-      { device_id: deviceId, location_lat: lat, location_lon: lon },
+      {
+        device_id: deviceId,
+        location_lat: lat,
+        location_lon: lon,
+        tarif_kwh: tarif.trim() !== '' ? Number(tarif) : null,
+        install_cost: installCost.trim() !== '' ? Number(installCost) : null,
+      },
       { onConflict: 'device_id' },
     );
     setSaving(false);
@@ -51,15 +63,15 @@ export default function DeviceSettings({ deviceId }: Props) {
     setTimeout(() => setSaved(false), 2000);
   }
 
-  const inputCls = 'w-full bg-[#050B12] border border-[#1A2D42] rounded-xl px-3 py-2.5 text-sm text-[#F5FAFF] focus:outline-none focus:border-[#00D4FF] focus:ring-1 focus:ring-[#00D4FF] transition placeholder:text-[#7A8A99]';
+  const inputCls = 'w-full bg-[#f2f2f7] border border-[#e5e5ea] rounded-xl px-3 py-2.5 text-sm text-[#1d1d1f] focus:outline-none focus:border-[#0071e3] focus:ring-1 focus:ring-[#0071e3] transition placeholder:text-[#6e6e73]';
 
   return (
-    <div className="bg-[#0B1B2B] border border-[#1A2D42] rounded-2xl p-6 space-y-5">
-      <h2 className="text-base font-semibold text-[#F5FAFF]">Paramètres du module</h2>
+    <div className="bg-[#ffffff] border border-[#e5e5ea] rounded-2xl p-6 space-y-5">
+      <h2 className="text-base font-semibold text-[#1d1d1f]">Paramètres du module</h2>
 
       <div className="grid md:grid-cols-2 gap-4">
         <div>
-          <label className="block text-xs text-[#7A8A99] uppercase tracking-widest mb-2">Nom affiché</label>
+          <label className="block text-xs text-[#6e6e73] tracking-tight mb-2">Nom affiché</label>
           <input
             value={name}
             onChange={(e) => setName(e.target.value)}
@@ -69,7 +81,7 @@ export default function DeviceSettings({ deviceId }: Props) {
         </div>
 
         <div>
-          <label className="block text-xs text-[#7A8A99] uppercase tracking-widest mb-2">Adresse / lieu d'installation</label>
+          <label className="block text-xs text-[#6e6e73] tracking-tight mb-2">Adresse / lieu d'installation</label>
           <div className="flex gap-2">
             <input
               value={location}
@@ -80,19 +92,43 @@ export default function DeviceSettings({ deviceId }: Props) {
             <button
               onClick={geocode}
               disabled={!location.trim() || geocoding}
-              className="px-3 py-2 bg-[#050B12] border border-[#1A2D42] hover:border-[#7A8A99] rounded-xl text-xs font-medium text-[#7A8A99] hover:text-[#F5FAFF] transition disabled:opacity-50 whitespace-nowrap"
+              className="px-3 py-2 bg-[#f2f2f7] border border-[#e5e5ea] hover:border-[#6e6e73] rounded-xl text-xs font-medium text-[#6e6e73] hover:text-[#1d1d1f] transition disabled:opacity-50 whitespace-nowrap"
             >
               {geocoding ? '…' : '↗ Localiser'}
             </button>
           </div>
           {lat && lon && (
-            <p className="text-xs text-[#42F5A7] mt-1.5">
+            <p className="text-xs text-[#34C759] mt-1.5">
               ✓ Coordonnées trouvées : {lat.toFixed(4)}, {lon.toFixed(4)} — météo antigel activée
             </p>
           )}
           {!lat && !lon && location && (
-            <p className="text-xs text-[#7A8A99] mt-1.5">Cliquez sur "Localiser" pour activer la surveillance antigel</p>
+            <p className="text-xs text-[#6e6e73] mt-1.5">Cliquez sur "Localiser" pour activer la surveillance antigel</p>
           )}
+        </div>
+
+        <div>
+          <label className="block text-xs text-[#6e6e73] tracking-tight mb-2">Tarif énergie remplacée (€/kWh)</label>
+          <input
+            type="number" step="0.001" min="0"
+            value={tarif}
+            onChange={(e) => setTarif(e.target.value)}
+            placeholder="0.13"
+            className={inputCls}
+          />
+          <p className="text-xs text-[#6e6e73] mt-1.5">Sert au calcul des économies (prix du gaz remplacé).</p>
+        </div>
+
+        <div>
+          <label className="block text-xs text-[#6e6e73] tracking-tight mb-2">Coût d'installation (€)</label>
+          <input
+            type="number" step="1" min="0"
+            value={installCost}
+            onChange={(e) => setInstallCost(e.target.value)}
+            placeholder="5000"
+            className={inputCls}
+          />
+          <p className="text-xs text-[#6e6e73] mt-1.5">Active le suivi d'amortissement / ROI côté client.</p>
         </div>
       </div>
 
@@ -102,8 +138,8 @@ export default function DeviceSettings({ deviceId }: Props) {
           disabled={saving}
           className={`px-5 py-2.5 rounded-xl text-sm font-semibold transition disabled:opacity-50 ${
             saved
-              ? 'bg-[#42F5A7]/10 text-[#42F5A7] border border-[#42F5A7]/30'
-              : 'bg-[#00D4FF]/10 text-[#00D4FF] border border-[#00D4FF]/30 hover:bg-[#00D4FF]/20'
+              ? 'bg-[#34C759]/10 text-[#34C759] border border-[#34C759]/30'
+              : 'bg-[#0071e3]/10 text-[#0071e3] border border-[#0071e3]/30 hover:bg-[#0071e3]/20'
           }`}
         >
           {saved ? '✓ Enregistré' : saving ? 'Enregistrement…' : 'Enregistrer'}

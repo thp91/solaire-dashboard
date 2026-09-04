@@ -15,11 +15,11 @@ export type SchemaLiveData = {
 // ─── Helpers ─────────────────────────────────────────────────────────────────
 
 function tempColor(t?: number | null): string {
-  if (t == null) return '#94a3b8';
-  if (t < 25)   return '#3b82f6';
-  if (t < 40)   return '#8b5cf6';
-  if (t < 55)   return '#f97316';
-  return '#ef4444';
+  if (t == null) return '#6e6e73';
+  if (t < 25)   return '#0071e3';
+  if (t < 40)   return '#AF52DE';
+  if (t < 55)   return '#FF9500';
+  return '#FF3B30';
 }
 
 function fmt(v?: number | null, unit = '°C'): string {
@@ -38,7 +38,7 @@ function TempBadge({ x, y, value, label }: { x: number; y: number; value?: numbe
         fill={c} fontFamily="system-ui, sans-serif">
         {fmt(value)}
       </text>
-      <text x={x} y={y - 18} textAnchor="middle" fontSize={9} fill="#94a3b8"
+      <text x={x} y={y - 18} textAnchor="middle" fontSize={9} fill="#6e6e73"
         fontFamily="system-ui, sans-serif">
         {label}
       </text>
@@ -47,14 +47,14 @@ function TempBadge({ x, y, value, label }: { x: number; y: number; value?: numbe
 }
 
 function Pump({ x, y, active }: { x: number; y: number; active?: boolean | null }) {
-  const c = active ? '#3b82f6' : '#94a3b8';
-  const bg = active ? '#dbeafe' : '#f8fafc';
+  const c = active ? '#0071e3' : '#6e6e73';
+  const bg = active ? '#e5e5ea' : '#ffffff';
   return (
     <g>
-      <circle cx={x} cy={y} r={20} fill="white" stroke="#cbd5e1" strokeWidth={1.5} />
+      <circle cx={x} cy={y} r={20} fill="white" stroke="#c7c7cc" strokeWidth={1.5} />
       <circle cx={x} cy={y} r={15} fill={bg} stroke={c} strokeWidth={2} />
       <path d={`M${x - 7},${y + 5} L${x + 9},${y} L${x - 7},${y - 5} Z`} fill={c} />
-      <text x={x} y={y + 34} textAnchor="middle" fontSize={9} fill="#64748b"
+      <text x={x} y={y + 34} textAnchor="middle" fontSize={9} fill="#8e8e93"
         fontFamily="system-ui, sans-serif">
         Pompe
       </text>
@@ -65,14 +65,14 @@ function Pump({ x, y, active }: { x: number; y: number; active?: boolean | null 
 function Exchanger({ x, y, w, h }: { x: number; y: number; w: number; h: number }) {
   return (
     <g>
-      <rect x={x} y={y} width={w} height={h} rx={6} fill="#f8fafc" stroke="#94a3b8" strokeWidth={2} />
+      <rect x={x} y={y} width={w} height={h} rx={6} fill="#ffffff" stroke="#6e6e73" strokeWidth={2} />
       {[0, 1, 2, 3].map((i) => (
         <path key={i}
           d={`M${x + 8},${y + 10 + i * 13} Q${x + w / 2},${y + 4 + i * 13} ${x + w - 8},${y + 10 + i * 13}`}
-          fill="none" stroke="#94a3b8" strokeWidth={1.5} opacity={0.7}
+          fill="none" stroke="#6e6e73" strokeWidth={1.5} opacity={0.7}
         />
       ))}
-      <text x={x + w / 2} y={y + h + 14} textAnchor="middle" fontSize={9} fill="#64748b"
+      <text x={x + w / 2} y={y + h + 14} textAnchor="middle" fontSize={9} fill="#8e8e93"
         fontFamily="system-ui, sans-serif">
         Échangeur
       </text>
@@ -96,13 +96,13 @@ function Tank({ x, y, w, h, tHaut, tBas, label, uid }: {
       </defs>
       {/* Body */}
       <rect x={x} y={y + 10} width={w} height={h - 20} fill={`url(#g-${uid})`}
-        stroke="#94a3b8" strokeWidth={2} />
+        stroke="#6e6e73" strokeWidth={2} />
       {/* Top cap */}
       <ellipse cx={x + w / 2} cy={y + 10} rx={w / 2} ry={9}
-        fill="#e2e8f0" stroke="#94a3b8" strokeWidth={2} />
+        fill="#e5e5ea" stroke="#6e6e73" strokeWidth={2} />
       {/* Bottom cap */}
       <ellipse cx={x + w / 2} cy={y + h - 10} rx={w / 2} ry={9}
-        fill="#cbd5e1" stroke="#94a3b8" strokeWidth={2} />
+        fill="#c7c7cc" stroke="#6e6e73" strokeWidth={2} />
       {/* Label */}
       <text x={x + w / 2} y={y + h / 2 + 4} textAnchor="middle" fontSize={12}
         fontWeight="700" fill="white" fontFamily="system-ui, sans-serif"
@@ -116,13 +116,13 @@ function Tank({ x, y, w, h, tHaut, tBas, label, uid }: {
 function EcsBox({ x, y, w, h }: { x: number; y: number; w: number; h: number }) {
   return (
     <g>
-      <rect x={x} y={y} width={w} height={h} rx={8} fill="#fdf2f8" stroke="#ec4899" strokeWidth={2} />
+      <rect x={x} y={y} width={w} height={h} rx={8} fill="#e5e5ea" stroke="#FF2D55" strokeWidth={2} />
       <text x={x + w / 2} y={y + h / 2 - 4} textAnchor="middle" fontSize={10}
-        fontWeight="600" fill="#db2777" fontFamily="system-ui, sans-serif">
+        fontWeight="600" fill="#FF2D55" fontFamily="system-ui, sans-serif">
         Appoint
       </text>
       <text x={x + w / 2} y={y + h / 2 + 10} textAnchor="middle" fontSize={10}
-        fontWeight="600" fill="#db2777" fontFamily="system-ui, sans-serif">
+        fontWeight="600" fill="#FF2D55" fontFamily="system-ui, sans-serif">
         ECS
       </text>
     </g>
@@ -133,17 +133,17 @@ function SolarPanels({ x, y, w, h }: { x: number; y: number; w: number; h: numbe
   return (
     <g>
       <text x={x + w / 2} y={y - 8} textAnchor="middle" fontSize={11}
-        fontWeight="600" fill="#3b82f6" fontFamily="system-ui, sans-serif">
+        fontWeight="600" fill="#0071e3" fontFamily="system-ui, sans-serif">
         ☀ Capteurs solaires
       </text>
-      <rect x={x} y={y} width={w} height={h} rx={8} fill="#eff6ff" stroke="#3b82f6" strokeWidth={2} />
+      <rect x={x} y={y} width={w} height={h} rx={8} fill="#e5e5ea" stroke="#0071e3" strokeWidth={2} />
       {/* Panel grid lines */}
       {[0, 1, 2].map((col) =>
         [0, 1].map((row) => (
           <rect key={`${col}-${row}`}
             x={x + 8 + col * (w / 3 - 2)} y={y + 8 + row * (h / 2 - 2)}
             width={w / 3 - 12} height={h / 2 - 10}
-            rx={3} fill="#bfdbfe" stroke="#93c5fd" strokeWidth={1}
+            rx={3} fill="#e5e5ea" stroke="#0071e3" strokeWidth={1}
           />
         ))
       )}
@@ -196,16 +196,16 @@ export default function SolarSchemaView({
   const ecsY   = tankY + 30;
 
   // ── Circuit colors ─────────────────────────────────────────────────────────
-  const RED    = '#ef4444';
-  const ORANGE = '#f97316';
-  const PINK   = '#ec4899';
-  const BLUE   = '#3b82f6';
+  const RED    = '#FF3B30';
+  const ORANGE = '#FF9500';
+  const PINK   = '#FF2D55';
+  const BLUE   = '#0071e3';
   const SW     = 3;       // stroke width
 
   return (
-    <div className="bg-slate-50 rounded-2xl p-4 overflow-x-auto">
+    <div className="bg-[#f2f2f7] rounded-2xl p-4 overflow-x-auto">
       {config.installation_name && (
-        <p className="text-sm font-semibold text-gray-600 mb-3">
+        <p className="text-sm font-semibold text-[#c7c7cc] mb-3">
           {config.installation_name}
         </p>
       )}
@@ -336,11 +336,11 @@ export default function SolarSchemaView({
         {config.show_debit && (
           <g>
             <rect x={t1X + 10} y={VH - 52} width={110} height={38} rx={10}
-              fill="#f0fdf4" stroke="#22c55e" strokeWidth={1.5} />
+              fill="#e5e5ea" stroke="#34C759" strokeWidth={1.5} />
             <text x={t1X + 65} y={VH - 38} textAnchor="middle" fontSize={9}
-              fill="#15803d" fontFamily="system-ui, sans-serif">Débit</text>
+              fill="#248A3D" fontFamily="system-ui, sans-serif">Débit</text>
             <text x={t1X + 65} y={VH - 22} textAnchor="middle" fontSize={13}
-              fontWeight="700" fill="#15803d" fontFamily="system-ui, sans-serif">
+              fontWeight="700" fill="#248A3D" fontFamily="system-ui, sans-serif">
               {live.lph != null ? `${Number(live.lph).toFixed(0)} L/h` : '— L/h'}
             </text>
           </g>
@@ -350,9 +350,9 @@ export default function SolarSchemaView({
         {slotOn('ambiance') && (
           <g>
             <rect x={VW - 130} y={VH - 52} width={110} height={38} rx={10}
-              fill="#f8fafc" stroke="#94a3b8" strokeWidth={1.5} />
+              fill="#ffffff" stroke="#6e6e73" strokeWidth={1.5} />
             <text x={VW - 75} y={VH - 38} textAnchor="middle" fontSize={9}
-              fill="#64748b" fontFamily="system-ui, sans-serif">
+              fill="#8e8e93" fontFamily="system-ui, sans-serif">
               {lbl('ambiance', 'Ambiance')}
             </text>
             <text x={VW - 75} y={VH - 22} textAnchor="middle" fontSize={13}
