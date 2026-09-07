@@ -48,17 +48,15 @@ export default function DeviceSettings({ deviceId }: Props) {
   async function save() {
     setSaving(true);
     await supabase.from('devices').update({ name: name || null, location: location || null }).eq('id', deviceId);
-    await supabase.from('energy_config').upsert(
-      {
-        device_id: deviceId,
-        location_lat: lat,
-        location_lon: lon,
-        tarif_kwh: tarif.trim() !== '' ? Number(tarif) : null,
-        install_cost: installCost.trim() !== '' ? Number(installCost) : null,
-      },
-      { onConflict: 'device_id' },
-    );
+    // On n'envoie tarif_kwh / install_cost QUE s'ils sont renseignés :
+    // tarif_kwh est NOT NULL (défaut 0.13) — envoyer null ferait échouer tout l'upsert.
+    const cfg: Record<string, unknown> = { device_id: deviceId, location_lat: lat, location_lon: lon };
+    if (tarif.trim() !== '')       cfg.tarif_kwh = Number(tarif);
+    if (installCost.trim() !== '') cfg.install_cost = Number(installCost);
+
+    const { error } = await supabase.from('energy_config').upsert(cfg, { onConflict: 'device_id' });
     setSaving(false);
+    if (error) { alert(`Erreur d'enregistrement : ${error.message}`); return; }
     setSaved(true);
     setTimeout(() => setSaved(false), 2000);
   }
