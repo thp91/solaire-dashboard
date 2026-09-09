@@ -59,6 +59,15 @@ export type Alerte = {
   created_at: string;
 };
 
+// Sonde DS18B20 identifiée par son adresse OneWire (rôle assignable, tolérante à la panne).
+export type DeviceSensor = {
+  address:   string;
+  role:      string | null;
+  last_temp: number | null;
+  last_seen: string | null;
+  active:    boolean;
+};
+
 // ─── Types auth / admin ───────────────────────────────────────────────────────
 
 export type Profile = {

@@ -39,9 +39,7 @@ export default function TechnicianView({ token, initial }: Props) {
   }, [token]);
 
   const t = snap.temps;
-  const sondes = ([1, 2, 3, 4, 5] as const)
-    .map((n) => ({ n, v: t ? t[`sonde_${n}` as const] : null }))
-    .filter((s) => s.v != null);
+  const sensors = snap.sensors ?? [];
 
   const live: SchemaLiveData = {
     capteur_solaire: t?.capteur_solaire,
@@ -87,13 +85,15 @@ export default function TechnicianView({ token, initial }: Props) {
                   ) : null,
                 )}
               </div>
-              {sondes.length > 0 && (
-                <div className="grid grid-cols-3 sm:grid-cols-5 gap-3">
-                  {sondes.map(({ n, v }) => (
-                    <TempCard key={n} label={`Sonde ${n}`} value={v as number} color="#34C759" />
-                  ))}
-                </div>
-              )}
+            </div>
+          )}
+
+          {/* Sondes DS18B20 (par rôle, tolérantes à la panne) */}
+          {sensors.length > 0 && (
+            <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+              {sensors.map((s) => (
+                <SensorCard key={s.role} label={s.role} temp={s.last_temp} faulted={sensorFaulted(s)} />
+              ))}
             </div>
           )}
 
@@ -147,6 +147,27 @@ function TempCard({ label, value, color }: { label: string; value: number; color
         {Number(value).toFixed(1)}
         <span className="text-[#8e8e93] text-[17px] font-medium">°C</span>
       </p>
+    </div>
+  );
+}
+
+function sensorFaulted(s: { active: boolean; last_seen: string | null }) {
+  if (!s.active || !s.last_seen) return true;
+  return Date.now() - new Date(s.last_seen).getTime() > 120_000; // > 2 min → panne
+}
+
+function SensorCard({ label, temp, faulted }: { label: string; temp: number | null; faulted: boolean }) {
+  return (
+    <div className="app-card p-4">
+      <p className="text-[12px] text-[#6e6e73] font-medium tracking-tight mb-2">{label}</p>
+      {faulted ? (
+        <p className="text-[15px] font-semibold text-[#FF3B30]">⚠️ Défectueuse</p>
+      ) : (
+        <p className="text-[26px] font-semibold tracking-tight tabular-nums text-[#34C759]">
+          {temp != null ? Number(temp).toFixed(1) : '—'}
+          <span className="text-[#8e8e93] text-[17px] font-medium">°C</span>
+        </p>
+      )}
     </div>
   );
 }

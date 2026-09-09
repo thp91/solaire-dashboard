@@ -1,11 +1,12 @@
 'use client';
 
-import { Temperature, Etat, Debit } from '@/lib/supabase';
+import { Temperature, Etat, Debit, DeviceSensor } from '@/lib/supabase';
 
 type Props = {
   lastTemp: Temperature | null;
   etat: Etat | null;
   debit: Debit | null;
+  sensors?: DeviceSensor[];
 };
 
 type Cell = { label: string; value: string; color: string };
@@ -13,8 +14,16 @@ type Group = { title: string; cells: Cell[] };
 
 const DARK = '#1d1d1f';
 const MUTED = '#6e6e73';
+const RED = '#FF3B30';
+const SENSOR_STALE_MS = 120_000; // 2 min sans mesure → sonde en panne
 
-export default function LiveMetricsPanel({ lastTemp, etat, debit }: Props) {
+function sensorFaulted(s: DeviceSensor) {
+  if (!s.active) return true;
+  if (!s.last_seen) return true;
+  return Date.now() - new Date(s.last_seen).getTime() > SENSOR_STALE_MS;
+}
+
+export default function LiveMetricsPanel({ lastTemp, etat, debit, sensors = [] }: Props) {
   const t = (v?: number | null) => `${Number(v).toFixed(1)}°C`;
 
   // ── Groupe : Températures (circuit VBus) ──
@@ -25,12 +34,17 @@ export default function LiveMetricsPanel({ lastTemp, etat, debit }: Props) {
   if (lastTemp?.retour_solaire != null)  temps.push({ label: 'Retour solaire', value: t(lastTemp.retour_solaire), color: '#AF52DE' });
   if (lastTemp?.ambiance != null)        temps.push({ label: 'Ambiance', value: t(lastTemp.ambiance), color: MUTED });
 
-  // ── Groupe : Sondes DS18B20 ──
-  const sondes: Cell[] = [];
-  ([1, 2, 3, 4, 5] as const).forEach((n) => {
-    const v = (lastTemp as unknown as Record<string, number | null>)?.[`sonde_${n}`];
-    if (v != null) sondes.push({ label: `Sonde ${n}`, value: t(v), color: '#34C759' });
-  });
+  // ── Groupe : Sondes DS18B20 (par rôle assigné, tolérantes à la panne) ──
+  const sondes: Cell[] = sensors
+    .filter((s) => s.role)                       // uniquement les sondes nommées
+    .map((s) => {
+      const faulted = sensorFaulted(s);
+      return {
+        label: s.role as string,
+        value: faulted ? '⚠️ Défectueuse' : (s.last_temp != null ? t(s.last_temp) : '—'),
+        color: faulted ? RED : '#34C759',
+      };
+    });
 
   // ── Groupe : Circulation (pompe + débits) ──
   const pumpOn = etat?.pompe_solaire;

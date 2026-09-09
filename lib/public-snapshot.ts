@@ -21,6 +21,8 @@ export type PublicSnapshot = {
   etat: { pompe_solaire: boolean | null } | null;
   debit: { lph: number | null; lph_2: number | null } | null;
   schema: SchemaConfig | null;
+  // Sondes DS18B20 nommées (par rôle), avec état de fraîcheur pour la détection de panne.
+  sensors: { role: string; last_temp: number | null; last_seen: string | null; active: boolean }[];
   recorded_at: string | null;
 };
 
@@ -46,6 +48,7 @@ export async function getPublicSnapshot(deviceId: string): Promise<PublicSnapsho
     { data: etats },
     { data: debits },
     { data: schemaRow },
+    { data: sondes },
   ] = await Promise.all([
     admin.from('devices').select('name, location, last_seen, publishing').eq('id', deviceId).single(),
     admin
@@ -59,6 +62,8 @@ export async function getPublicSnapshot(deviceId: string): Promise<PublicSnapsho
     admin.from('debits').select('lph, lph_2').eq('device_id', deviceId)
       .order('recorded_at', { ascending: false }).limit(1),
     admin.from('device_schemas').select('config').eq('device_id', deviceId).maybeSingle(),
+    admin.from('device_sensors').select('role, last_temp, last_seen, active')
+      .eq('device_id', deviceId).not('role', 'is', null).order('role', { ascending: true }),
   ]);
 
   const t = temps?.[0] ?? null;
@@ -76,6 +81,9 @@ export async function getPublicSnapshot(deviceId: string): Promise<PublicSnapsho
     etat: etats?.[0] ? { pompe_solaire: etats[0].pompe_solaire } : null,
     debit: debits?.[0] ? { lph: debits[0].lph, lph_2: debits[0].lph_2 } : null,
     schema: (schemaRow?.config as SchemaConfig) ?? null,
+    sensors: (sondes ?? []).map((s) => ({
+      role: s.role as string, last_temp: s.last_temp, last_seen: s.last_seen, active: s.active,
+    })),
     recorded_at: t?.recorded_at ?? null,
   };
 }

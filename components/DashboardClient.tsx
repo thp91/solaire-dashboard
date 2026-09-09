@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { supabase, Temperature, Etat, Debit } from '@/lib/supabase';
+import { supabase, Temperature, Etat, Debit, DeviceSensor } from '@/lib/supabase';
 import TemperatureChart from '@/components/TemperatureChart';
 import LiveMetricsPanel from '@/components/LiveMetricsPanel';
 import Controls from '@/components/Controls';
@@ -12,6 +12,7 @@ import SolarSchemaView, { SchemaLiveData } from '@/components/SolarSchemaView';
 import EnergySection from '@/components/EnergySection';
 import AlertBanner from '@/components/AlertBanner';
 import DeviceSettings from '@/components/DeviceSettings';
+import SensorLabels from '@/components/SensorLabels';
 import ClientTabs from '@/components/ClientTabs';
 import EconomicsSummary from '@/components/EconomicsSummary';
 import LiveGauge from '@/components/LiveGauge';
@@ -40,6 +41,7 @@ export default function DashboardClient({
   const [publishing, setPublishing]     = useState<boolean>(true);
   const [deviceName, setDeviceName]     = useState<string | null>(null);
   const [schema, setSchema]             = useState<SchemaConfig | null>(null);
+  const [sensors, setSensors]           = useState<DeviceSensor[]>([]);
 
   useEffect(() => {
     async function load() {
@@ -49,6 +51,7 @@ export default function DashboardClient({
         { data: debits },
         { data: device },
         { data: schemaRow },
+        { data: sondes },
       ] = await Promise.all([
         supabase.from('temperatures').select('*').eq('device_id', deviceId)
           .order('recorded_at', { ascending: false }).limit(HISTORY_SIZE),
@@ -58,6 +61,8 @@ export default function DashboardClient({
           .order('recorded_at', { ascending: false }).limit(1),
         supabase.from('devices').select('last_seen, publishing, name').eq('id', deviceId).single(),
         supabase.from('device_schemas').select('config').eq('device_id', deviceId).maybeSingle(),
+        supabase.from('device_sensors').select('address, role, last_temp, last_seen, active')
+          .eq('device_id', deviceId).order('created_at', { ascending: true }),
       ]);
 
       if (temps)      setTemperatures([...temps].reverse());
@@ -68,6 +73,7 @@ export default function DashboardClient({
         setDeviceName(device.name ?? null);
       }
       if (schemaRow?.config) setSchema(schemaRow.config as SchemaConfig);
+      if (sondes) setSensors(sondes as DeviceSensor[]);
     }
     load();
   }, [deviceId]);
@@ -113,6 +119,13 @@ export default function DashboardClient({
           const d = payload.new as { last_seen?: string; publishing?: boolean };
           if (d.last_seen) setLastSeen(d.last_seen);
           if (typeof d.publishing === 'boolean') setPublishing(d.publishing);
+        })
+        .on('postgres_changes', { event: '*', schema: 'public', table: 'device_sensors',
+          filter: `device_id=eq.${deviceId}` }, async () => {
+          const { data } = await supabase.from('device_sensors')
+            .select('address, role, last_temp, last_seen, active')
+            .eq('device_id', deviceId).order('created_at', { ascending: true });
+          if (data) setSensors(data as DeviceSensor[]);
         })
         .subscribe((status) => {
           if (status === 'CHANNEL_ERROR' || status === 'TIMED_OUT') {
@@ -200,7 +213,7 @@ export default function DashboardClient({
           )}
 
           {/* Mesures en temps réel — regroupées dans une seule carte, cellules grises */}
-          <LiveMetricsPanel lastTemp={lastTemp ?? null} etat={lastEtat} debit={lastDebit} />
+          <LiveMetricsPanel lastTemp={lastTemp ?? null} etat={lastEtat} debit={lastDebit} sensors={sensors} />
 
           {temperatures.length > 0
             ? <TemperatureChart data={temperatures} />
@@ -220,6 +233,7 @@ export default function DashboardClient({
             <EnergySection deviceId={deviceId} />
           </div>
 
+          {isAdmin && <SensorLabels deviceId={deviceId} />}
           {isAdmin && <DeviceSettings deviceId={deviceId} />}
           {isAdmin && <Controls deviceId={deviceId} />}
           {showHistory && <HistorySection deviceId={deviceId} />}
