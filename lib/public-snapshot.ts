@@ -1,5 +1,6 @@
 import { createAdminClient } from '@/lib/supabase-admin';
 import type { SchemaConfig } from '@/lib/schema-types';
+import type { CustomSchema } from '@/lib/schema-custom';
 
 // Instantané « technicien » : uniquement les champs temps réel utiles.
 // Volontairement PAS d'énergie/€, historique, firmware ou température ESP32.
@@ -20,7 +21,7 @@ export type PublicSnapshot = {
   } | null;
   etat: { pompe_solaire: boolean | null } | null;
   debit: { lph: number | null; lph_2: number | null } | null;
-  schema: SchemaConfig | null;
+  schema: SchemaConfig | CustomSchema | null;
   // Sondes DS18B20 nommées (par rôle), avec état de fraîcheur pour la détection de panne.
   sensors: { role: string; last_temp: number | null; last_seen: string | null; active: boolean }[];
   recorded_at: string | null;
@@ -80,7 +81,7 @@ export async function getPublicSnapshot(deviceId: string): Promise<PublicSnapsho
       : null,
     etat: etats?.[0] ? { pompe_solaire: etats[0].pompe_solaire } : null,
     debit: debits?.[0] ? { lph: debits[0].lph, lph_2: debits[0].lph_2 } : null,
-    schema: (schemaRow?.config as SchemaConfig) ?? null,
+    schema: (schemaRow?.config as SchemaConfig | CustomSchema) ?? null,
     sensors: (sondes ?? []).map((s) => ({
       role: s.role as string, last_temp: s.last_temp, last_seen: s.last_seen, active: s.active,
     })),

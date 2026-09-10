@@ -4,6 +4,7 @@ import { useCallback, useEffect, useState } from 'react';
 import Link from 'next/link';
 import { supabase, DeviceSensor } from '@/lib/supabase';
 import { SchemaConfig, TEMPLATE_SLOTS } from '@/lib/schema-types';
+import { type CustomSchema, isCustomSchema } from '@/lib/schema-custom';
 
 const STALE_MS = 120_000; // 2 min sans mesure → sonde en panne
 
@@ -14,7 +15,7 @@ function isFaulted(s: DeviceSensor) {
 
 export default function SensorLabels({ deviceId }: { deviceId: string }) {
   const [sensors, setSensors] = useState<DeviceSensor[]>([]);
-  const [schema, setSchema]   = useState<SchemaConfig | null>(null);
+  const [schema, setSchema]   = useState<SchemaConfig | CustomSchema | null>(null);
   const [loading, setLoading] = useState(true);
   const [savingAddr, setSavingAddr] = useState<string | null>(null);
 
@@ -25,16 +26,24 @@ export default function SensorLabels({ deviceId }: { deviceId: string }) {
       supabase.from('device_schemas').select('config').eq('device_id', deviceId).maybeSingle(),
     ]);
     setSensors((sondes as DeviceSensor[]) ?? []);
-    setSchema((schemaRow?.config as SchemaConfig) ?? null);
+    setSchema((schemaRow?.config as SchemaConfig | CustomSchema) ?? null);
     setLoading(false);
   }, [deviceId]);
 
   useEffect(() => { load(); }, [load]);
 
-  // Emplacements proposés = les positions du schéma (avec leur libellé configuré)
-  const emplacements = schema
-    ? TEMPLATE_SLOTS[schema.template].map((s) => schema.slots[s.key]?.label || s.defaultLabel)
-    : [];
+  // Emplacements proposés = les sondes posées sur le schéma personnalisé et reliées
+  // à une sonde DS18B20 (le rôle est la partie après « sonde: »). Repli sur les
+  // emplacements du modèle figé pour les modules pas encore migrés.
+  const emplacements = !schema
+    ? []
+    : isCustomSchema(schema)
+      ? [...new Set(
+          schema.probes
+            .filter((p) => p.kind === 'sonde' && p.binding?.startsWith('sonde:'))
+            .map((p) => p.binding!.slice(6)),
+        )]
+      : TEMPLATE_SLOTS[schema.template].map((s) => schema.slots[s.key]?.label || s.defaultLabel);
 
   async function assign(address: string, role: string) {
     setSavingAddr(address);
@@ -62,11 +71,11 @@ export default function SensorLabels({ deviceId }: { deviceId: string }) {
 
       {loading ? (
         <p className="text-[14px] text-[#8e8e93]">Chargement…</p>
-      ) : !schema ? (
+      ) : emplacements.length === 0 ? (
         <p className="text-[14px] text-[#8e8e93]">
-          Configure d'abord le{' '}
-          <Link href={`/admin/devices/${deviceId}/schema`} className="text-[#0071e3] font-medium">schéma solaire</Link>
-          {' '}pour définir les emplacements affectables.
+          Aucun emplacement affectable. Ouvre l&apos;{' '}
+          <Link href={`/admin/devices/${deviceId}/schema-editor`} className="text-[#0071e3] font-medium">éditeur de schéma</Link>
+          {' '}et pose des sondes reliées à « Sonde DS18B20 » pour définir les emplacements.
         </p>
       ) : sensors.length === 0 ? (
         <p className="text-[14px] text-[#8e8e93]">

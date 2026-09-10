@@ -459,11 +459,15 @@ export default function SchemaEditor({ deviceId, initial, deviceName, sensorRole
                     <optgroup label="Régulateur (VBus)">
                       {VBUS_FIELDS.map((f) => <option key={f} value={`vbus:${f}`}>{VBUS_LABELS[f]}</option>)}
                     </optgroup>
-                    {sensorRoles.length > 0 && (
-                      <optgroup label="Sondes DS18B20">
-                        {sensorRoles.map((r) => <option key={r} value={`sonde:${r}`}>{r}</option>)}
-                      </optgroup>
-                    )}
+                    <optgroup label="Sonde DS18B20">
+                      {/* Le libellé de la sonde devient un nouvel emplacement affectable */}
+                      {selectedProbe.label.trim() && !sensorRoles.includes(selectedProbe.label.trim()) && (
+                        <option value={`sonde:${selectedProbe.label.trim()}`}>
+                          {selectedProbe.label.trim()} (nouvel emplacement)
+                        </option>
+                      )}
+                      {sensorRoles.map((r) => <option key={r} value={`sonde:${r}`}>{r}</option>)}
+                    </optgroup>
                   </>
                 )}
               </select>

@@ -19,6 +19,8 @@ import ClientTabs from '@/components/ClientTabs';
 import EconomicsSummary from '@/components/EconomicsSummary';
 import LiveGauge from '@/components/LiveGauge';
 import { SchemaConfig } from '@/lib/schema-types';
+import SchemaCanvas from '@/components/SchemaCanvas';
+import { type CustomSchema, isCustomSchema, buildSchemaLive } from '@/lib/schema-custom';
 import type { Economics } from '@/lib/economics';
 import type { DeviceGeo } from '@/lib/device-geo';
 
@@ -42,7 +44,7 @@ export default function DashboardClient({
   const [lastSeen, setLastSeen]         = useState<string | null>(null);
   const [publishing, setPublishing]     = useState<boolean>(true);
   const [deviceName, setDeviceName]     = useState<string | null>(null);
-  const [schema, setSchema]             = useState<SchemaConfig | null>(null);
+  const [schema, setSchema]             = useState<SchemaConfig | CustomSchema | null>(null);
   const [sensors, setSensors]           = useState<DeviceSensor[]>([]);
   const [comptages, setComptages]       = useState<DeviceComptage[]>([]);
 
@@ -77,7 +79,7 @@ export default function DashboardClient({
         setLastSeen(device.last_seen); setPublishing(device.publishing ?? true);
         setDeviceName(device.name ?? null);
       }
-      if (schemaRow?.config) setSchema(schemaRow.config as SchemaConfig);
+      if (schemaRow?.config) setSchema(schemaRow.config as SchemaConfig | CustomSchema);
       if (sondes) setSensors(sondes as DeviceSensor[]);
       if (cptRows) setComptages(cptRows as DeviceComptage[]);
     }
@@ -181,6 +183,11 @@ export default function DashboardClient({
     if (!faulted) sondesByRole[s.role] = s.last_temp;
   }
 
+  // Données live du schéma personnalisé (liaisons 'vbus:', 'sonde:', 'debit1/2').
+  const customLive = buildSchemaLive({
+    temp: lastTemp, debit: lastDebit, etat: lastEtat, sensors,
+  });
+
   return (
     <div className="min-h-screen bg-[#f2f2f7] flex flex-col">
       {!isAdmin && <ClientNavbar deviceId={deviceId} showBack={multiDevice} />}
@@ -201,7 +208,7 @@ export default function DashboardClient({
             <div className="flex items-center gap-3">
               <DeviceStatus lastSeen={lastSeen} publishing={publishing} />
               {isAdmin && (
-                <a href={`/admin/devices/${deviceId}/schema`}
+                <a href={`/admin/devices/${deviceId}/schema-editor`}
                   className="btn btn-secondary !py-1.5 !px-3.5 !text-[13px]">
                   Schéma
                 </a>
@@ -221,16 +228,34 @@ export default function DashboardClient({
           {/* Alertes */}
           <AlertBanner deviceId={deviceId} isAdmin={isAdmin} />
 
-          {/* Schéma interactif */}
-          {schema && <SolarSchemaView config={schema} live={liveForSchema} sondes={sondesByRole} />}
-          {!schema && isAdmin && (
+          {/* Schéma interactif — personnalisé, sinon ancien modèle figé */}
+          {isCustomSchema(schema) ? (
+            <div className="app-card p-4">
+              {schema.installation_name && (
+                <h2 className="text-[15px] font-semibold text-[#1d1d1f] mb-3">{schema.installation_name}</h2>
+              )}
+              <SchemaCanvas schema={schema} live={customLive} />
+            </div>
+          ) : schema ? (
+            <>
+              <SolarSchemaView config={schema as SchemaConfig} live={liveForSchema} sondes={sondesByRole} />
+              {isAdmin && (
+                <p className="text-[12px] text-[#8e8e93] text-center">
+                  Ce module utilise l&apos;ancien schéma figé.{' '}
+                  <a href={`/admin/devices/${deviceId}/schema-editor`} className="text-[#0071e3] hover:underline">
+                    Passer au schéma personnalisé
+                  </a>
+                </p>
+              )}
+            </>
+          ) : isAdmin ? (
             <div className="app-card p-8 text-center">
               <p className="text-[#6e6e73] text-[15px] mb-4">Aucun schéma configuré pour ce module.</p>
-              <a href={`/admin/devices/${deviceId}/schema`} className="btn btn-primary">
-                Configurer le schéma
+              <a href={`/admin/devices/${deviceId}/schema-editor`} className="btn btn-primary">
+                Créer le schéma
               </a>
             </div>
-          )}
+          ) : null}
 
           {/* Mesures en temps réel — regroupées dans une seule carte, cellules grises */}
           <LiveMetricsPanel lastTemp={lastTemp ?? null} etat={lastEtat} debit={lastDebit} sensors={sensors} />

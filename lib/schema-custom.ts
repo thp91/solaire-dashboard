@@ -89,6 +89,40 @@ export const PIPE_COLORS: Record<PipeColor, string> = {
   green: '#34C759',
 };
 
+// Sonde considérée en panne si sa dernière remontée date de plus de 2 min.
+const SENSOR_STALE_MS = 120_000;
+
+type LiveSources = {
+  temp?: Record<string, unknown> | null;   // dernière ligne `temperatures`
+  debit?: { lph?: number | null; lph_2?: number | null } | null;
+  etat?: { pompe_solaire?: boolean | null } | null;
+  sensors?: { role?: string | null; last_temp?: number | null; last_seen?: string | null; active?: boolean | null }[];
+  now?: number;
+};
+
+// Construit les données live indexées par la convention de liaison des sondes
+// du schéma : 'vbus:<champ>', 'sonde:<rôle>', 'debit1' / 'debit2'.
+export function buildSchemaLive(src: LiveSources): SchemaLive {
+  const now = src.now ?? Date.now();
+  const temps: Record<string, number | null> = {};
+
+  for (const f of VBUS_FIELDS) {
+    const v = src.temp?.[f];
+    if (v != null && v !== '' && !isNaN(Number(v))) temps[`vbus:${f}`] = Number(v);
+  }
+  for (const s of src.sensors ?? []) {
+    if (!s.role || s.last_temp == null) continue;
+    const stale = s.active === false || !s.last_seen || now - new Date(s.last_seen).getTime() > SENSOR_STALE_MS;
+    if (!stale) temps[`sonde:${s.role}`] = Number(s.last_temp);
+  }
+
+  return {
+    temps,
+    debits: { debit1: src.debit?.lph ?? null, debit2: src.debit?.lph_2 ?? null },
+    pumpOn: src.etat?.pompe_solaire ?? undefined,
+  };
+}
+
 export function emptySchema(): CustomSchema {
   return {
     kind: 'custom',

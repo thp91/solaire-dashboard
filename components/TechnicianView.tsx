@@ -4,6 +4,9 @@ import { useEffect, useState } from 'react';
 import Image from 'next/image';
 import DeviceStatus from '@/components/DeviceStatus';
 import SolarSchemaView, { SchemaLiveData } from '@/components/SolarSchemaView';
+import SchemaCanvas from '@/components/SchemaCanvas';
+import { isCustomSchema, buildSchemaLive } from '@/lib/schema-custom';
+import type { SchemaConfig } from '@/lib/schema-types';
 import type { PublicSnapshot } from '@/lib/public-snapshot';
 
 type Props = { token: string; initial: PublicSnapshot };
@@ -118,16 +121,26 @@ export default function TechnicianView({ token, initial }: Props) {
             />
           </div>
 
-          {/* Schéma interactif */}
-          {snap.schema && (
+          {/* Schéma interactif — personnalisé, sinon ancien modèle figé */}
+          {isCustomSchema(snap.schema) ? (
+            <div className="app-card p-4">
+              {snap.schema.installation_name && (
+                <h2 className="text-[15px] font-semibold text-[#1d1d1f] mb-3">{snap.schema.installation_name}</h2>
+              )}
+              <SchemaCanvas
+                schema={snap.schema}
+                live={buildSchemaLive({ temp: snap.temps, debit: snap.debit, etat: snap.etat, sensors })}
+              />
+            </div>
+          ) : snap.schema ? (
             <SolarSchemaView
-              config={snap.schema}
+              config={snap.schema as SchemaConfig}
               live={live}
               sondes={Object.fromEntries(
                 sensors.filter((s) => !sensorFaulted(s) && s.last_temp != null).map((s) => [s.role, s.last_temp]),
               )}
             />
-          )}
+          ) : null}
 
           {!t && (
             <div className="app-card p-12 text-center text-[#6e6e73] text-[15px]">
