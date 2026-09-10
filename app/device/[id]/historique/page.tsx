@@ -5,7 +5,9 @@ import ClientTabs from '@/components/ClientTabs';
 import HistorySection from '@/components/HistorySection';
 import MonthlyHistory from '@/components/MonthlyHistory';
 import ReportSection from '@/components/ReportSection';
+import ComptagesHistory from '@/components/ComptagesHistory';
 import { getEconomics, getMonthlySeries } from '@/lib/economics';
+import { getComptagesStats } from '@/lib/comptages-stats';
 
 type Props = { params: Promise<{ id: string }> };
 
@@ -35,9 +37,10 @@ export default async function DeviceHistoriquePage({ params }: Props) {
     .in('organization_id', orgIds);
   const multiDevice = (count ?? 0) > 1;
 
-  const [eco, series] = await Promise.all([
+  const [eco, series, comptages] = await Promise.all([
     getEconomics(deviceId),
     getMonthlySeries(deviceId),
+    getComptagesStats(deviceId),
   ]);
 
   return (
@@ -58,6 +61,8 @@ export default async function DeviceHistoriquePage({ params }: Props) {
             tarif={eco.tarif}
             months={series.map((s) => s.month)}
           />
+
+          <ComptagesHistory stats={comptages} />
 
           <MonthlyHistory data={series} />
 
