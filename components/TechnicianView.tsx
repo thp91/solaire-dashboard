@@ -119,7 +119,15 @@ export default function TechnicianView({ token, initial }: Props) {
           </div>
 
           {/* Schéma interactif */}
-          {snap.schema && <SolarSchemaView config={snap.schema} live={live} />}
+          {snap.schema && (
+            <SolarSchemaView
+              config={snap.schema}
+              live={live}
+              sondes={Object.fromEntries(
+                sensors.filter((s) => !sensorFaulted(s) && s.last_temp != null).map((s) => [s.role, s.last_temp]),
+              )}
+            />
+          )}
 
           {!t && (
             <div className="app-card p-12 text-center text-[#6e6e73] text-[15px]">

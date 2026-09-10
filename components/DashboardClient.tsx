@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { supabase, Temperature, Etat, Debit, DeviceSensor } from '@/lib/supabase';
+import { supabase, Temperature, Etat, Debit, DeviceSensor, DeviceComptage } from '@/lib/supabase';
 import TemperatureChart from '@/components/TemperatureChart';
 import LiveMetricsPanel from '@/components/LiveMetricsPanel';
 import Controls from '@/components/Controls';
@@ -13,6 +13,8 @@ import EnergySection from '@/components/EnergySection';
 import AlertBanner from '@/components/AlertBanner';
 import DeviceSettings from '@/components/DeviceSettings';
 import SensorLabels from '@/components/SensorLabels';
+import ComptagesPanel from '@/components/ComptagesPanel';
+import ComptagesConfig from '@/components/ComptagesConfig';
 import ClientTabs from '@/components/ClientTabs';
 import EconomicsSummary from '@/components/EconomicsSummary';
 import LiveGauge from '@/components/LiveGauge';
@@ -42,6 +44,7 @@ export default function DashboardClient({
   const [deviceName, setDeviceName]     = useState<string | null>(null);
   const [schema, setSchema]             = useState<SchemaConfig | null>(null);
   const [sensors, setSensors]           = useState<DeviceSensor[]>([]);
+  const [comptages, setComptages]       = useState<DeviceComptage[]>([]);
 
   useEffect(() => {
     async function load() {
@@ -52,6 +55,7 @@ export default function DashboardClient({
         { data: device },
         { data: schemaRow },
         { data: sondes },
+        { data: cptRows },
       ] = await Promise.all([
         supabase.from('temperatures').select('*').eq('device_id', deviceId)
           .order('recorded_at', { ascending: false }).limit(HISTORY_SIZE),
@@ -63,6 +67,7 @@ export default function DashboardClient({
         supabase.from('device_schemas').select('config').eq('device_id', deviceId).maybeSingle(),
         supabase.from('device_sensors').select('address, role, last_temp, last_seen, active')
           .eq('device_id', deviceId).order('created_at', { ascending: true }),
+        supabase.from('device_comptages').select('*').eq('device_id', deviceId),
       ]);
 
       if (temps)      setTemperatures([...temps].reverse());
@@ -74,6 +79,7 @@ export default function DashboardClient({
       }
       if (schemaRow?.config) setSchema(schemaRow.config as SchemaConfig);
       if (sondes) setSensors(sondes as DeviceSensor[]);
+      if (cptRows) setComptages(cptRows as DeviceComptage[]);
     }
     load();
   }, [deviceId]);
@@ -127,6 +133,11 @@ export default function DashboardClient({
             .eq('device_id', deviceId).order('created_at', { ascending: true });
           if (data) setSensors(data as DeviceSensor[]);
         })
+        .on('postgres_changes', { event: '*', schema: 'public', table: 'device_comptages',
+          filter: `device_id=eq.${deviceId}` }, async () => {
+          const { data } = await supabase.from('device_comptages').select('*').eq('device_id', deviceId);
+          if (data) setComptages(data as DeviceComptage[]);
+        })
         .subscribe((status) => {
           if (status === 'CHANNEL_ERROR' || status === 'TIMED_OUT') {
             cleanup();
@@ -160,6 +171,15 @@ export default function DashboardClient({
     lph:             lastDebit?.lph,
     pompe_solaire:   lastEtat?.pompe_solaire,
   };
+
+  // Températures des sondes DS18B20 par emplacement (uniquement les sondes fraîches),
+  // pour les afficher sur le schéma à leur position.
+  const sondesByRole: Record<string, number | null> = {};
+  for (const s of sensors) {
+    if (!s.role || s.last_temp == null) continue;
+    const faulted = !s.active || !s.last_seen || Date.now() - new Date(s.last_seen).getTime() > 120_000;
+    if (!faulted) sondesByRole[s.role] = s.last_temp;
+  }
 
   return (
     <div className="min-h-screen bg-[#f2f2f7] flex flex-col">
@@ -202,7 +222,7 @@ export default function DashboardClient({
           <AlertBanner deviceId={deviceId} isAdmin={isAdmin} />
 
           {/* Schéma interactif */}
-          {schema && <SolarSchemaView config={schema} live={liveForSchema} />}
+          {schema && <SolarSchemaView config={schema} live={liveForSchema} sondes={sondesByRole} />}
           {!schema && isAdmin && (
             <div className="app-card p-8 text-center">
               <p className="text-[#6e6e73] text-[15px] mb-4">Aucun schéma configuré pour ce module.</p>
@@ -224,6 +244,9 @@ export default function DashboardClient({
             )
           }
 
+          {/* Comptages d'énergie (solaire / chauffage) */}
+          <ComptagesPanel comptages={comptages} />
+
           {/* Économies & impact */}
           {economics && <EconomicsSummary eco={economics} />}
 
@@ -233,6 +256,7 @@ export default function DashboardClient({
             <EnergySection deviceId={deviceId} />
           </div>
 
+          {isAdmin && <ComptagesConfig deviceId={deviceId} />}
           {isAdmin && <SensorLabels deviceId={deviceId} />}
           {isAdmin && <DeviceSettings deviceId={deviceId} />}
           {isAdmin && <Controls deviceId={deviceId} />}

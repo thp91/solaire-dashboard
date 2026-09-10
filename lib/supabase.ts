@@ -68,6 +68,22 @@ export type DeviceSensor = {
   active:    boolean;
 };
 
+// Comptage d'énergie (solaire ou chauffage) : 1 débitmètre + départ/retour.
+export type DeviceComptage = {
+  idx:            number;                     // 1 | 2
+  type:           'solaire' | 'chauffage';
+  enabled:        boolean;
+  label:          string | null;
+  debit_source:   number;                    // 1 | 2
+  depart_kind:    'vbus' | 'sonde' | null;
+  depart_ref:     string | null;
+  retour_kind:    'vbus' | 'sonde' | null;
+  retour_ref:     string | null;
+  last_power_w:   number | null;
+  last_energy_wh: number;
+  last_seen:      string | null;
+};
+
 // ─── Types auth / admin ───────────────────────────────────────────────────────
 
 export type Profile = {

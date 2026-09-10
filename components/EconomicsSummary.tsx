@@ -13,7 +13,7 @@ function fmtNum(n: number, unit = '') {
 
 export default function EconomicsSummary({ eco }: { eco: Economics }) {
   const co2Km = Math.round(eco.totalCo2Kg * KM_PER_KG_CO2);
-  const trees = Math.max(1, Math.round(eco.totalCo2Kg / KG_CO2_PER_TREE_YEAR));
+  const trees = Math.round(eco.totalCo2Kg / KG_CO2_PER_TREE_YEAR);
 
   return (
     <div className="app-card p-6 space-y-5">

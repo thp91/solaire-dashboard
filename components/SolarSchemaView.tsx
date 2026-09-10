@@ -156,14 +156,20 @@ function SolarPanels({ x, y, w, h }: { x: number; y: number; w: number; h: numbe
 export default function SolarSchemaView({
   config,
   live,
-}: { config: SchemaConfig; live: SchemaLiveData }) {
+  sondes,
+}: { config: SchemaConfig; live: SchemaLiveData; sondes?: Record<string, number | null> }) {
   const is2     = config.template === '2_ballons';
   const showEcs = config.show_ecs;
 
-  // Resolve a slot's live value
+  // Resolve a slot's live value.
+  // Priorité à la sonde DS18B20 assignée à cet emplacement (par libellé),
+  // sinon on retombe sur la valeur VBus du champ mappé.
   function val(key: string): number | null | undefined {
     const s = config.slots[key];
-    if (!s?.enabled || !s.field) return undefined;
+    if (!s?.enabled) return undefined;
+    const fromSonde = sondes?.[s.label];
+    if (fromSonde != null) return fromSonde;
+    if (!s.field) return undefined;
     return live[s.field as keyof SchemaLiveData] as number | null | undefined;
   }
   function lbl(key: string, fallback: string): string {
